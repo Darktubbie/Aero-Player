@@ -16,8 +16,3 @@ defecto, que suenan/se muestran hasta que elijas los tuyos propios desde
 "Personalizar". Si prefieres cambiar los archivos por defecto directamente
 (en vez de usar el selector dentro de la app), también puedes reemplazar esos
 dos archivos en `assets/` antes de desplegar el proyecto.
-
-## Instalación
-
-Sube la carpeta a cualquier hosting con HTTPS (GitHub Pages, Netlify, Vercel)
-y ábrela desde Chrome en Android → menú (⋮) → "Instalar app".
