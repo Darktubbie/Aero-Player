@@ -1,0 +1,1072 @@
+:root {
+  --sky-deep: #0b3d63;
+  --sky-mid: #1c6f9c;
+  --sky-bright: #2fa4c9;
+  --aqua: #a9ecf2;
+  --leaf: #7fd88f;
+  --leaf-deep: #3fa15a;
+  --grass: #6fce4a;
+  --pink: #ff6fa5;
+  --pink-deep: #d43f7c;
+  --violet: #9b7ff0;
+  --violet-deep: #6a4fd0;
+  --chrome-hi: #ffffff;
+  --chrome-lo: #c7d7de;
+  --ink: #0c2b3a;
+  --ink-soft: #35566a;
+  --glass: rgba(255, 255, 255, 0.34);
+  --glass-strong: rgba(255, 255, 255, 0.68);
+  --glass-edge: rgba(255, 255, 255, 0.9);
+  --shadow-deep: rgba(4, 30, 46, 0.45);
+  font-size: 16px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overscroll-behavior: none;
+}
+
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  color: var(--ink);
+  background: #0b3d63;
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  inset: 0;
+}
+
+/* ---------- Lock-screen style clock widget ---------- */
+.lock-widget {
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.lock-widget-sky {
+  text-align: center;
+  color: #ffffff;
+  text-shadow: 0 2px 6px rgba(3, 30, 46, 0.55);
+  padding: 7px 12px 10px;
+  border-radius: 18px;
+  background-image: url("assets/sky-widget.png");
+  background-size: cover;
+  background-position: center;
+  image-rendering: pixelated;
+  box-shadow:
+    inset 0 2px 2px rgba(255, 255, 255, 0.7),
+    inset 0 -30px 30px -20px rgba(3, 30, 46, 0.35),
+    0 6px 16px -4px rgba(3, 30, 46, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  position: relative;
+  overflow: hidden;
+}
+
+.lock-widget-sky::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(8, 40, 70, 0.32) 0%, rgba(8, 40, 70, 0.12) 45%, rgba(8, 40, 70, 0.3) 100%);
+  pointer-events: none;
+}
+
+.lock-widget-sky > * {
+  position: relative;
+  z-index: 1;
+}
+
+.lock-widget-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.brand-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  padding: 4px 10px 4px 5px;
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+}
+
+.brand-badge {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #eafcff 0%, #7fd2e8 45%, #1c8db0 100%);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    inset 0 -2px 3px rgba(4, 60, 85, 0.35);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.status-glyphs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.9;
+}
+
+.lock-date {
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  opacity: 0.95;
+}
+
+.lock-time {
+  font-size: 2.1rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.5px;
+}
+
+/* Glass panel base, used by album card and playlist */
+.glass-panel {
+  background: linear-gradient(155deg, var(--glass-strong), var(--glass) 55%, rgba(255, 255, 255, 0.2));
+  border: 1px solid var(--glass-edge);
+  border-radius: 26px;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    inset 0 -18px 30px -20px rgba(255, 255, 255, 0.65),
+    0 12px 30px -10px var(--shadow-deep);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-panel::before {
+  content: "";
+  position: absolute;
+  top: -30%;
+  left: -10%;
+  width: 120%;
+  height: 55%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.6), transparent);
+  transform: rotate(-4deg);
+  pointer-events: none;
+}
+
+/* Now-playing hero */
+.now-playing {
+  padding: 22px 22px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.orb-wrap {
+  width: 176px;
+  height: 176px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: linear-gradient(160deg, #eafeff 0%, #8fe0ef 35%, #1c7ea3 75%, #0b3d63 100%);
+  box-shadow:
+    inset 0 3px 4px rgba(255, 255, 255, 0.95),
+    inset 0 -14px 26px rgba(4, 40, 60, 0.4),
+    0 14px 34px -8px rgba(3, 30, 46, 0.55);
+}
+
+.cover-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+.orb-wrap.has-cover .cover-art {
+  display: block;
+}
+
+.orb-wrap.has-cover .orb-disc {
+  display: none;
+}
+
+.orb-wrap.has-cover.spinning .cover-art {
+  animation: spin 8s linear infinite;
+}
+
+.orb-wrap::after {
+  content: "";
+  position: absolute;
+  top: 8%;
+  left: 14%;
+  width: 46%;
+  height: 30%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+  filter: blur(3px);
+}
+
+.orb-wrap.spinning .orb-disc {
+  animation: spin 8s linear infinite;
+}
+
+.orb-disc {
+  width: 66%;
+  height: 66%;
+  border-radius: 50%;
+  background: conic-gradient(from 200deg, #f4fbff, #cfe9f5, #eaf6ff, #d8cdf5, #cdeef0, #f4fbff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 6px rgba(255, 255, 255, 0.4), inset 0 2px 6px rgba(3, 30, 46, 0.25);
+}
+
+.orb-disc::after {
+  content: "";
+  width: 20%;
+  height: 20%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff, #b9c6cd 60%, #7c8a92);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.track-meta {
+  text-align: center;
+  color: #eafcff;
+  text-shadow: 0 1px 3px rgba(2, 30, 45, 0.55);
+  min-height: 46px;
+}
+
+.track-title {
+  font-size: 1.08rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 280px;
+}
+
+.track-artist {
+  font-size: 0.88rem;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+/* Progress */
+.progress-row {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.progress-track {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(6, 40, 58, 0.35);
+  box-shadow: inset 0 2px 3px rgba(3, 25, 38, 0.5);
+  cursor: pointer;
+}
+
+.progress-fill {
+  position: absolute;
+  inset: 0;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #d3fff2, var(--leaf) 40%, var(--leaf-deep));
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+.progress-fill::after {
+  content: "";
+  position: absolute;
+  right: -2px;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  transform: translate(50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff, #cfeee0 60%, #7fd88f);
+  box-shadow: 0 1px 4px rgba(3, 25, 38, 0.5);
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: #eafcff;
+  opacity: 0.85;
+  padding: 0 2px;
+}
+
+/* Transport controls */
+.controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+}
+
+.transport-btn {
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #ffffff, #cfe7ee 55%, #9cc7d6);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    inset 0 -3px 5px rgba(20, 70, 90, 0.25),
+    0 4px 10px rgba(4, 30, 46, 0.4);
+  color: var(--sky-deep);
+}
+
+.transport-btn:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.8),
+    inset 0 2px 4px rgba(20, 70, 90, 0.3);
+}
+
+.transport-btn.small {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+}
+
+.transport-btn.play {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #eafff5, #a9ecc4 45%, #3fa15a);
+}
+
+/* Winamp-style visualizer bars */
+.visualizer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  max-width: 180px;
+  height: 22px;
+  padding: 0 6px;
+}
+
+.visualizer span {
+  flex: 1;
+  height: 14%;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #d3fff2, var(--leaf) 55%, var(--leaf-deep));
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.7);
+  transition: height 0.22s ease;
+}
+
+.visualizer.live span {
+  opacity: 1;
+}
+
+.visualizer:not(.live) span {
+  opacity: 0.45;
+}
+
+/* Playlist panel */
+.playlist-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 220px;
+  padding: 16px 16px 14px;
+}
+
+.playlist-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2px 10px;
+}
+
+.playlist-title {
+  font-weight: 600;
+  color: var(--ink);
+  font-size: 0.98rem;
+}
+
+.playlist-count {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+.playlist-scroll {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 2px;
+}
+
+.track-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  transition: background 0.15s ease;
+}
+
+.track-row:active {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.track-row.playing {
+  background: linear-gradient(90deg, rgba(127, 216, 143, 0.45), rgba(255, 255, 255, 0.4));
+  border-color: rgba(127, 216, 143, 0.75);
+}
+
+.track-num {
+  width: 18px;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  flex-shrink: 0;
+}
+
+/* Buddy-orb style thumbnails, MSN-messenger flavored */
+.track-thumb {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: linear-gradient(160deg, #eafeff 0%, #8fe0ef 35%, #1c7ea3 100%);
+  background-size: cover;
+  background-position: center;
+  box-shadow:
+    inset 0 2px 2px rgba(255, 255, 255, 0.9),
+    inset 0 -6px 8px rgba(4, 30, 46, 0.25),
+    0 2px 5px rgba(4, 30, 46, 0.3);
+  position: relative;
+}
+
+.track-thumb.buddy-0 { background-image: linear-gradient(160deg, #eafff5 0%, #a9ecc4 45%, #3fa15a 100%) !important; }
+.track-thumb.buddy-1 { background-image: linear-gradient(160deg, #fff0f6 0%, #ffb0cf 45%, var(--pink-deep) 100%) !important; }
+.track-thumb.buddy-2 { background-image: linear-gradient(160deg, #eafeff 0%, #8fe0ef 45%, #1c7ea3 100%) !important; }
+.track-thumb.buddy-3 { background-image: linear-gradient(160deg, #f2ecff 0%, #c6b3fb 45%, var(--violet-deep) 100%) !important; }
+.track-thumb.buddy-4 { background-image: linear-gradient(160deg, #fff3e0 0%, #ffc477 45%, #d97f1e 100%) !important; }
+
+.track-thumb.no-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='rgba(12,43,58,0.55)' d='M9 18V5l12-2v13c0 1.7-1.8 3-4 3s-4-1.3-4-3 1.8-3 4-3c.7 0 1.4.1 2 .4V7.4L11 9v9c0 1.7-1.8 3-4 3s-4-1.3-4-3 1.8-3 4-3c.7 0 1.4.1 2 .4V6.9L9 8v10z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 46%;
+}
+
+.track-row.playing .track-num {
+  color: var(--leaf-deep);
+  font-weight: 700;
+}
+
+.track-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.track-info .name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track-info .sub {
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+}
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  color: var(--ink-soft);
+  padding: 16px;
+}
+
+.empty-state svg {
+  width: 50px;
+  height: 50px;
+  opacity: 0.7;
+}
+
+/* ---------- Colorful glossy dock row (bottom shortcuts) ---------- */
+.dock-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding-top: 12px;
+  margin-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.dock-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow:
+    inset 0 3px 3px rgba(255, 255, 255, 0.8),
+    inset 0 -10px 14px rgba(0, 0, 0, 0.22),
+    0 5px 12px rgba(4, 30, 46, 0.4);
+  position: relative;
+  transition: transform 0.1s ease;
+}
+
+.dock-icon::after {
+  content: "";
+  position: absolute;
+  top: 7%;
+  left: 10%;
+  width: 55%;
+  height: 32%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.65);
+  filter: blur(2.5px);
+}
+
+.dock-icon:active {
+  transform: translateY(1px) scale(0.97);
+}
+
+.dock-add {
+  background: linear-gradient(160deg, #a9ecc4 0%, var(--grass) 50%, var(--leaf-deep) 100%);
+}
+
+.dock-shuffle {
+  background: linear-gradient(160deg, #ffb0cf 0%, var(--pink) 50%, var(--pink-deep) 100%);
+}
+
+.dock-shuffle.active {
+  box-shadow:
+    inset 0 2px 2px rgba(255, 255, 255, 0.75),
+    inset 0 -6px 10px rgba(0, 0, 0, 0.18),
+    0 0 0 3px rgba(255, 255, 255, 0.8),
+    0 4px 12px rgba(212, 63, 124, 0.55);
+}
+
+.dock-repeat {
+  background: linear-gradient(160deg, #d8c6ff 0%, var(--violet) 50%, var(--violet-deep) 100%);
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.dock-repeat.active {
+  box-shadow:
+    inset 0 3px 3px rgba(255, 255, 255, 0.8),
+    inset 0 -10px 14px rgba(0, 0, 0, 0.22),
+    0 0 0 3px rgba(255, 255, 255, 0.85),
+    0 4px 12px rgba(106, 79, 208, 0.6);
+}
+
+.volume-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 6px;
+  color: #eafcff;
+  width: 100%;
+}
+
+.volume-row input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(6, 40, 58, 0.35);
+  box-shadow: inset 0 1px 2px rgba(3, 25, 38, 0.5);
+}
+
+.volume-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff, #cfeee0 60%, #7fd88f);
+  box-shadow: 0 1px 3px rgba(3, 25, 38, 0.5);
+}
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(12, 43, 58, 0.88);
+  color: #eafcff;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  box-shadow: 0 6px 18px rgba(3, 20, 30, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+
+/* ---------- Desktop (XP/Vista style background + program icon + taskbar) ---------- */
+.desktop {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  background-image:
+    linear-gradient(180deg, rgba(4, 25, 45, 0.28) 0%, rgba(4, 25, 45, 0.02) 22%, rgba(4, 25, 45, 0.05) 70%, rgba(4, 25, 45, 0.35) 100%),
+    url("assets/desktop-wallpaper.jpg");
+  background-size: cover;
+  background-position: center;
+}
+
+.desktop-icons {
+  position: absolute;
+  top: calc(18px + env(safe-area-inset-top));
+  left: 10px;
+  right: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px 4px;
+}
+
+.desktop-icon {
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+}
+
+.desktop-icon-glyph {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, #eafeff 0%, #8fe0ef 35%, #1c7ea3 75%, #0b3d63 100%);
+  box-shadow:
+    inset 0 2px 2px rgba(255, 255, 255, 0.85),
+    inset 0 -8px 12px rgba(3, 30, 46, 0.3),
+    0 4px 10px rgba(3, 30, 46, 0.4);
+  animation: icon-invite 2.2s ease-in-out infinite;
+}
+
+.desktop-icon-glyph.glyph-photos {
+  background: linear-gradient(160deg, #fff3e0 0%, #ffc477 45%, #d97f1e 100%);
+}
+
+.desktop-icon-glyph.glyph-video {
+  background: linear-gradient(160deg, #f2ecff 0%, #c6b3fb 45%, var(--violet-deep) 100%);
+}
+
+.desktop-icon-glyph.glyph-media {
+  background: linear-gradient(160deg, #eafff5 0%, #a9ecc4 45%, #3fa15a 100%);
+}
+
+.desktop-icon-glyph.glyph-settings {
+  background: linear-gradient(160deg, #dfe7ee 0%, #a9bccb 45%, #4d6478 100%);
+}
+
+@keyframes icon-invite {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+.desktop-icon-label {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(3, 30, 46, 0.9), 0 0 6px rgba(3, 30, 46, 0.6);
+  text-align: center;
+  line-height: 1.25;
+}
+
+/* XP-Luna style taskbar with a glossy start button */
+.desktop-taskbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(50px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 8px;
+  padding-right: 8px;
+  gap: 10px;
+  background: linear-gradient(180deg, #3a9ed6 0%, #1c6f9c 18%, #124e70 85%, #0d3d59 100%);
+  border-top: 1px solid rgba(180, 230, 255, 0.6);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 -2px 8px rgba(3, 20, 32, 0.3);
+}
+
+.taskbar-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  flex: 1;
+  min-width: 0;
+}
+
+.taskbar-app-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: none;
+  cursor: pointer;
+  padding: 7px 14px 7px 8px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 0.78rem;
+  color: #ffffff;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.05));
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.taskbar-app-btn.active {
+  background: linear-gradient(180deg, rgba(10, 30, 45, 0.45), rgba(10, 30, 45, 0.25));
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.taskbar-app-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #eafcff, #7fd2e8 60%, #1c8db0);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  flex-shrink: 0;
+}
+
+.taskbar-clock {
+  color: #eafcff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  padding: 6px 12px;
+  border-radius: 4px;
+}
+
+/* ---------- Application window: full-screen "installed app" by default,
+   with an authentic XP/Vista-glass titlebar. Restore = smaller floating demo. ---------- */
+.window {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 3;
+  border-radius: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: none;
+  transform: scale(1);
+  opacity: 1;
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.3, 1.1), opacity 0.22s ease,
+    top 0.3s ease, right 0.3s ease, bottom 0.3s ease, left 0.3s ease, border-radius 0.3s ease;
+  transform-origin: 66px 54px;
+}
+
+.window.restored {
+  top: 64px;
+  right: 26px;
+  bottom: calc(96px + env(safe-area-inset-bottom));
+  left: 26px;
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 26px 50px -6px rgba(2, 20, 32, 0.65), 0 0 0 2px #0a3d6b;
+}
+
+.window:not(.open) {
+  transform: scale(0.15);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Classic XP "Luna" titlebar: solid saturated blue, rounded top corners only,
+   Tahoma-style bold caption, thin gloss band (not a Vista glass sheen). */
+.window-titlebar {
+  flex-shrink: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 4px 5px 8px;
+  padding-top: calc(5px + env(safe-area-inset-top));
+  background: linear-gradient(180deg, #2e7fd6 0%, #1958b8 18%, #0f3f9e 45%, #0a3d6b 100%);
+  border: 2px solid #0a3d6b;
+  border-bottom: none;
+}
+
+.window:not(.restored) .window-titlebar {
+  border-radius: 0;
+  border-width: 0;
+}
+
+.window.restored .window-titlebar {
+  border-radius: 6px 6px 0 0;
+}
+
+.window-titlebar::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  height: 40%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0));
+  border-radius: 4px 4px 0 0;
+  pointer-events: none;
+}
+
+.window-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #ffffff;
+  font-family: "Tahoma", "Segoe UI", Verdana, sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-shadow: 0 1px 1px rgba(0, 15, 40, 0.8);
+  position: relative;
+  z-index: 1;
+  letter-spacing: 0.2px;
+}
+
+.window-title-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #eafcff, #7fd2e8 60%, #1c8db0);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 0 0 1px rgba(3, 30, 46, 0.4);
+  flex-shrink: 0;
+}
+
+.window-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Classic XP square beveled buttons */
+.win-btn {
+  width: 21px;
+  height: 20px;
+  border-radius: 2px;
+  border: 1px solid rgba(5, 30, 60, 0.6);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #17456b;
+  background: linear-gradient(180deg, #ffffff 0%, #d9e8f5 40%, #a7c6e0 55%, #cfe3f3 100%);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.95),
+    inset -1px -1px 0 rgba(70, 110, 150, 0.5);
+}
+
+.win-btn:active {
+  background: linear-gradient(180deg, #a7c6e0 0%, #cfe3f3 100%);
+  box-shadow: inset 1px 1px 2px rgba(20, 50, 80, 0.5);
+}
+
+.win-close {
+  color: #ffffff;
+  background: linear-gradient(180deg, #ff9d8f 0%, #e6433f 40%, #b3211d 55%, #e6433f 100%);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 210, 200, 0.8),
+    inset -1px -1px 0 rgba(90, 10, 5, 0.5);
+}
+
+.win-close:active {
+  background: linear-gradient(180deg, #b3211d 0%, #e6433f 100%);
+}
+
+.window-body {
+  flex: 1;
+  overflow: hidden;
+  padding: 14px 16px calc(18px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: linear-gradient(180deg, #eaf7ff 0%, #d8effa 40%, #eef8ff 100%);
+  border: 2px solid #0a3d6b;
+  border-top: none;
+  min-height: 0;
+}
+
+.window:not(.restored) .window-body {
+  border-width: 0;
+}
+
+/* Split layout: now-playing / draggable divider / playlist — fills the
+   window with no page-level scroll, like OpenTune's resizable panes. */
+.split-container {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.split-container .now-playing,
+.split-container .playlist-panel {
+  flex: 0 0 auto;
+  min-height: 90px;
+  overflow-y: auto;
+}
+
+.split-divider {
+  flex: 0 0 auto;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: row-resize;
+  touch-action: none;
+}
+
+.split-grip {
+  width: 46px;
+  height: 5px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, rgba(10, 61, 107, 0.5), rgba(10, 61, 107, 0.25));
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5);
+}
+
+.split-divider:active .split-grip {
+  background: rgba(47, 143, 208, 0.7);
+}
+
+.photo-body {
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.photo-view {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 10px;
+  box-shadow: 0 10px 26px rgba(3, 20, 32, 0.35), 0 0 0 4px #ffffff;
+  object-fit: contain;
+}
+
+
+/* Aero Player 0.8 library / mobile enhancements */
+.playlist-head{gap:10px;align-items:center;flex-wrap:wrap}.playlist-heading{display:flex;align-items:center;gap:8px}.library-tools{display:flex;gap:6px;margin-left:auto}.library-search,.library-sort{border:1px solid rgba(44,112,155,.35);border-radius:9px;background:rgba(255,255,255,.78);padding:6px 9px;color:#164a69;min-width:110px;box-shadow:inset 0 1px 2px rgba(0,0,0,.08)}.library-search{width:150px}.track-row{position:relative}.track-row:focus-visible{outline:2px solid #2e86c1;outline-offset:-2px}.track-actions{margin-left:auto;display:flex;gap:3px;opacity:.55}.track-row:hover .track-actions,.track-row:focus-within .track-actions{opacity:1}.track-action{width:27px;height:27px;border:1px solid rgba(60,120,155,.25);border-radius:7px;background:linear-gradient(#fff,#dceefa);color:#24678b;font-weight:700;cursor:pointer}.track-action.danger{color:#b72e43}.library-mini-btn{border:1px solid rgba(43,110,150,.3);border-radius:8px;padding:6px 9px;background:linear-gradient(#fff,#d8edf8);color:#174f70;font-weight:700;cursor:pointer}.library-mini-btn.danger{color:#a22f43}.drop-target{outline:2px dashed rgba(46,134,193,.7);outline-offset:-5px}.progress-track{cursor:pointer}.progress-track:focus-visible{outline:2px solid #2e86c1}.youtube-body{display:flex;flex-direction:column;gap:10px;padding:12px;background:#e8f6ff}.youtube-toolbar{display:flex;gap:8px}.youtube-toolbar input{flex:1;border:1px solid rgba(43,110,150,.35);border-radius:9px;padding:9px 10px}.glossy-btn{border:1px solid rgba(43,110,150,.35);border-radius:9px;padding:8px 14px;background:linear-gradient(#fff,#bfe4f5);color:#164a69;font-weight:700;cursor:pointer}.youtube-note{font-size:12px;color:#41677d;background:rgba(255,255,255,.65);border-radius:8px;padding:7px}.youtube-body iframe{width:100%;height:min(55vh,420px);border:0;border-radius:10px;background:#000;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+@media (max-width:700px){.desktop-icons{gap:8px}.desktop-icon{transform:scale(.9);transform-origin:top left}.window{inset:6px!important;width:auto!important;height:auto!important}.window-titlebar{min-height:38px}.lock-widget-sky{padding:10px}.split-container{min-height:0}.playlist-head{padding:8px}.library-tools{width:100%;margin-left:0}.library-search{flex:1;width:auto}.track-actions{opacity:1}.track-row{min-height:58px}.dock-row{flex-wrap:wrap;justify-content:center}.library-mini-btn{font-size:11px}.youtube-body iframe{height:48vh}.youtube-toolbar{flex-direction:column}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}.visualizer{transition:none!important}}
+
+/* ---------- Personalizar (wallpaper + ambient music picker) ---------- */
+.settings-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  background: linear-gradient(180deg, #eaf7ff 0%, #d8effa 40%, #eef8ff 100%);
+}
+
+.settings-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.settings-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.settings-row-text strong {
+  font-size: 0.88rem;
+  color: var(--ink);
+}
+
+.settings-row-text span {
+  font-size: 0.74rem;
+  color: var(--ink-soft);
+}
+
+.settings-body .library-mini-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}

@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#2E86C1" />
+  <title>Aero Player</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="vendor/jsmediatags.min.js"></script>
+</head>
+<body>
+  <div class="desktop" id="desktop">
+    <div class="desktop-icons">
+      <button class="desktop-icon" id="appIcon" aria-label="Abrir Aero Player">
+        <span class="desktop-icon-glyph">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M9 18V5l12-2v13" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" stroke="#fff" stroke-width="1.8"/><circle cx="18" cy="16" r="3" stroke="#fff" stroke-width="1.8"/></svg>
+        </span>
+        <span class="desktop-icon-label">Aero Player</span>
+      </button>
+
+      <button class="desktop-icon" id="photosIcon" aria-label="Abrir Fotos">
+        <span class="desktop-icon-glyph glyph-photos">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="14" height="12" rx="1.5" fill="#fff" fill-opacity="0.9"/><rect x="7" y="4" width="14" height="12" rx="1.5" fill="none" stroke="#fff" stroke-width="1.6"/><circle cx="11" cy="9" r="1.6" fill="#2fa4c9"/><path d="M8 15l2.5-3 2 2 2.5-3.5L18 15" stroke="#2fa4c9" stroke-width="1.4" stroke-linejoin="round" fill="none"/></svg>
+        </span>
+        <span class="desktop-icon-label">Fotos</span>
+      </button>
+
+      <button class="desktop-icon soon" data-app="Video" aria-label="Video">
+        <span class="desktop-icon-glyph glyph-video">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="14" height="14" rx="2" fill="#fff" fill-opacity="0.92"/><path d="M17 10l4-2.5v9L17 14" stroke="#fff" stroke-width="1.6" stroke-linejoin="round" fill="none"/><path d="M8 9l5 3-5 3V9z" fill="#ff6fa5"/></svg>
+        </span>
+        <span class="desktop-icon-label">Video</span>
+      </button>
+
+      <button class="desktop-icon" id="youtubeIcon" aria-label="Abrir YouTube Online">
+        <span class="desktop-icon-glyph glyph-video">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="12" rx="3" fill="#fff" fill-opacity="0.94"/><path d="M10 9l6 3-6 3V9z" fill="#e53935"/></svg>
+        </span>
+        <span class="desktop-icon-label">YouTube Online</span>
+      </button>
+
+      <button class="desktop-icon soon" data-app="Centro multimedia" aria-label="Centro multimedia">
+        <span class="desktop-icon-glyph glyph-media">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="2.5" y="4.5" width="19" height="13" rx="2" fill="none" stroke="#fff" stroke-width="1.7"/><path d="M9.5 8.5l6 3-6 3v-6z" fill="#fff"/><path d="M8 21h8M12 17.5V21" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </span>
+        <span class="desktop-icon-label">Centro multimedia</span>
+      </button>
+
+      <button class="desktop-icon" id="settingsIcon" aria-label="Personalizar fondo y música">
+        <span class="desktop-icon-glyph glyph-settings">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="#fff" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9c.14.6.63 1.05 1.24 1.19a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="desktop-icon-label">Personalizar</span>
+      </button>
+    </div>
+
+    <div class="desktop-taskbar">
+      <div class="taskbar-buttons" id="taskbarButtons"></div>
+      <div class="taskbar-clock" id="taskbarClock">3:00</div>
+    </div>
+  </div>
+
+  <div class="window" id="appWindow" data-title="Aero Player">
+    <div class="window-titlebar">
+      <div class="window-title">
+        <span class="window-title-icon"></span>
+        Aero Player
+      </div>
+      <div class="window-controls">
+        <button class="win-btn win-min" data-action="min" aria-label="Minimizar">
+          <svg width="10" height="10" viewBox="0 0 10 10"><rect x="0" y="8" width="10" height="2" fill="currentColor"/></svg>
+        </button>
+        <button class="win-btn win-max" data-action="max" aria-label="Maximizar">
+          <svg width="10" height="10" viewBox="0 0 10 10"><rect x="0.5" y="0.5" width="9" height="9" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>
+        </button>
+        <button class="win-btn win-close" data-action="close" aria-label="Cerrar">
+          <svg width="11" height="11" viewBox="0 0 11 11"><path d="M1 1l9 9M10 1l-9 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="window-body no-pad">
+      <div class="lock-widget">
+        <div class="lock-widget-sky">
+          <div class="lock-widget-top">
+            <span class="brand-chip">
+              <span class="brand-badge"></span>
+              Aero Player
+            </span>
+            <span class="status-glyphs">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 20.5a1.4 1.4 0 100-2.8 1.4 1.4 0 000 2.8zM6.5 14.5a8 8 0 0111 0M3.5 10.8a12.5 12.5 0 0117 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <svg width="17" height="12" viewBox="0 0 24 16" fill="none"><rect x="1" y="1" width="19" height="14" rx="3" stroke="currentColor" stroke-width="1.6"/><rect x="3.5" y="3.5" width="12" height="9" rx="1.4" fill="currentColor"/><rect x="21" y="5.5" width="2" height="5" rx="1" fill="currentColor"/></svg>
+            </span>
+          </div>
+          <div class="lock-date" id="lockDate">martes 1 de septiembre</div>
+          <div class="lock-time" id="lockTime">3:00</div>
+        </div>
+      </div>
+
+      <div class="split-container" id="splitContainer">
+        <section class="glass-panel now-playing" id="paneTop">
+          <div class="orb-wrap" id="orbWrap">
+            <img class="cover-art" id="coverArt" alt="" />
+            <div class="orb-disc" id="orbDisc"></div>
+          </div>
+
+          <div class="track-meta">
+            <div class="track-title" id="trackTitle">Sin música cargada</div>
+            <div class="track-artist" id="trackArtist">Agrega canciones para empezar</div>
+          </div>
+
+          <div class="progress-row">
+            <div class="progress-track" id="progressTrack">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-labels">
+              <span id="timeCurrent">0:00</span>
+              <span id="timeDuration">0:00</span>
+            </div>
+          </div>
+
+          <div class="controls-row">
+            <button class="transport-btn small" id="prevBtn" aria-label="Anterior">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zM19 6l-9 6 9 6z"/></svg>
+            </button>
+            <button class="transport-btn play" id="playBtn" aria-label="Reproducir">
+              <svg id="playIcon" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l12-7z"/></svg>
+            </button>
+            <button class="transport-btn small" id="nextBtn" aria-label="Siguiente">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM5 6l9 6-9 6z"/></svg>
+            </button>
+          </div>
+
+          <div class="visualizer" id="visualizer" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+
+          <div class="volume-row">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h4l5 5V5L7 10H3z"/></svg>
+            <input type="range" id="volumeSlider" min="0" max="100" value="80" />
+          </div>
+        </section>
+
+        <div class="split-divider" id="splitDivider" role="separator" tabindex="0" aria-orientation="horizontal" aria-valuemin="25" aria-valuemax="78" aria-valuenow="58" aria-label="Redimensionar paneles">
+          <span class="split-grip"></span>
+        </div>
+
+        <section class="glass-panel playlist-panel" id="paneBottom">
+          <div class="playlist-head">
+            <div class="playlist-heading"><span class="playlist-title">Tu música</span><span class="playlist-count" id="playlistCount">0 canciones</span></div>
+            <div class="library-tools">
+              <input id="searchInput" class="library-search" type="search" placeholder="Buscar…" aria-label="Buscar en tu música" />
+              <select id="sortSelect" class="library-sort" aria-label="Ordenar biblioteca">
+                <option value="added">Agregadas</option><option value="title">Título</option><option value="artist">Artista</option><option value="album">Álbum</option><option value="favorite">Favoritas</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="playlist-scroll" id="playlistScroll">
+            <div class="empty-state" id="emptyState">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M9 18V5l12-2v13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3" stroke="currentColor" stroke-width="1.6"/><circle cx="18" cy="16" r="3" stroke="currentColor" stroke-width="1.6"/></svg>
+              <div>Aún no tienes canciones aquí.<br />Agrega archivos de música de tu dispositivo.</div>
+            </div>
+          </div>
+
+          <div class="dock-row">
+            <button class="dock-icon dock-add" id="addBtnEmpty" title="Agregar música" aria-label="Agregar música">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 20l3-8 11-9 3 3-9 11-8 3z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round" fill="rgba(255,255,255,0.25)"/><path d="M14.5 4.5l5 5" stroke="#fff" stroke-width="1.6"/><circle cx="6.5" cy="17.5" r="2" fill="#fff"/></svg>
+            </button>
+            <button class="dock-icon dock-shuffle" id="shuffleBtn" title="Aleatorio" aria-label="Aleatorio">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <g fill="#fff"><circle cx="12" cy="4.5" r="2.6"/><circle cx="19" cy="9.5" r="2.6"/><circle cx="19" cy="16.5" r="2.6"/><circle cx="12" cy="20.5" r="2.6"/><circle cx="5" cy="16.5" r="2.6"/><circle cx="5" cy="9.5" r="2.6"/><circle cx="12" cy="12.5" r="2.9" fill="rgba(255,255,255,0.85)"/></g>
+              </svg>
+            </button>
+            <button class="dock-icon dock-repeat" id="repeatBtn" title="Repetir" aria-label="Repetir">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="9" rx="2" fill="#fff"/><path d="M7 10c0 3 2 5.5 5 5.5s5-2.5 5-5.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><path d="M6 8l1 2-2 1M18 8l-1 2 2 1" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 19h6M12 16v5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </button>
+            <button class="library-mini-btn" id="folderBtn" title="Agregar carpeta">＋ Carpeta</button>
+            <button class="library-mini-btn" id="exportBtn" title="Exportar metadatos">Exportar</button>
+            <button class="library-mini-btn" id="importBtn" title="Importar metadatos">Importar</button>
+            <button class="library-mini-btn danger" id="clearLibraryBtn" title="Vaciar biblioteca">Vaciar</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="window" id="youtubeWindow" data-title="YouTube Online">
+    <div class="window-titlebar"><div class="window-title"><span class="window-title-icon"></span>YouTube Online</div><div class="window-controls"><button class="win-btn win-min" data-action="min" aria-label="Minimizar">−</button><button class="win-btn win-max" data-action="max" aria-label="Maximizar">□</button><button class="win-btn win-close" data-action="close" aria-label="Cerrar">×</button></div></div>
+    <div class="window-body youtube-body">
+      <div class="youtube-toolbar"><input id="youtubeUrlInput" type="url" placeholder="Pega un enlace de YouTube…" aria-label="Enlace de YouTube" /><button id="youtubeLoadBtn" class="glossy-btn">Cargar</button></div>
+      <div class="youtube-note">Reproductor oficial incrustado. Aero Player no puede quitar los anuncios que YouTube decida mostrar.</div>
+      <iframe id="youtubeFrame" title="Reproductor de YouTube" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <div class="window" id="photoWindow" data-title="Fotos">
+    <div class="window-titlebar">
+      <div class="window-title">
+        <span class="window-title-icon"></span>
+        Fotos
+      </div>
+      <div class="window-controls">
+        <button class="win-btn win-min" data-action="min" aria-label="Minimizar">
+          <svg width="10" height="10" viewBox="0 0 10 10"><rect x="0" y="8" width="10" height="2" fill="currentColor"/></svg>
+        </button>
+        <button class="win-btn win-max" data-action="max" aria-label="Maximizar">
+          <svg width="10" height="10" viewBox="0 0 10 10"><rect x="0.5" y="0.5" width="9" height="9" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>
+        </button>
+        <button class="win-btn win-close" data-action="close" aria-label="Cerrar">
+          <svg width="11" height="11" viewBox="0 0 11 11"><path d="M1 1l9 9M10 1l-9 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="window-body photo-body">
+      <img class="photo-view" src="assets/monipple.jpg" alt="Foto" />
+    </div>
+  </div>
+
+  <div class="window" id="settingsWindow" data-title="Personalizar">
+    <div class="window-titlebar">
+      <div class="window-title">
+        <span class="window-title-icon"></span>
+        Personalizar
+      </div>
+      <div class="window-controls">
+        <button class="win-btn win-min" data-action="min" aria-label="Minimizar">
+          <svg width="10" height="10" viewBox="0 0 10 10"><rect x="0" y="8" width="10" height="2" fill="currentColor"/></svg>
+        </button>
+        <button class="win-btn win-max" data-action="max" aria-label="Maximizar">
+          <svg width="10" height="10" viewBox="0 0 10 10"><rect x="0.5" y="0.5" width="9" height="9" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>
+        </button>
+        <button class="win-btn win-close" data-action="close" aria-label="Cerrar">
+          <svg width="11" height="11" viewBox="0 0 11 11"><path d="M1 1l9 9M10 1l-9 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="window-body settings-body">
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="settings-row-text">
+            <strong>Fondo de escritorio</strong>
+            <span>La imagen detrás de los íconos y la barra de tareas</span>
+          </div>
+          <button class="library-mini-btn" id="wallpaperPickBtn">Elegir imagen</button>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-text">
+            <strong>Música de fondo</strong>
+            <span>Suena en el escritorio; se pausa al abrir una ventana</span>
+          </div>
+          <button class="library-mini-btn" id="ambientPickBtn">Elegir audio</button>
+        </div>
+      </div>
+      <button class="library-mini-btn danger" id="settingsResetBtn">Restablecer valores originales</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <input type="file" id="fileInput" accept="audio/*" multiple style="display:none" />
+  <input type="file" id="coverInput" accept="image/*" style="display:none" />
+  <input type="file" id="libraryInput" accept="application/json,.json" style="display:none" />
+  <input type="file" id="wallpaperInput" accept="image/*" style="display:none" />
+  <input type="file" id="ambientInput" accept="audio/*" style="display:none" />
+  <audio id="audioEl" preload="metadata"></audio>
+  <audio id="ambientEl" src="assets/desktop-ambient.mp3" loop preload="none"></audio>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
