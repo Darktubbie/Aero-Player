@@ -127,7 +127,8 @@
     if (chimePlayed) return;
     try {
       const Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return;
-      const ctx = new Ctx(), master = ctx.createGain(); master.gain.value = .22; master.connect(ctx.destination);
+      const ctx = new Ctx(); ctx.resume?.();
+      const master = ctx.createGain(); master.gain.value = .22; master.connect(ctx.destination);
       [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
         const t = ctx.currentTime + i * .16, o = ctx.createOscillator(), g = ctx.createGain(); o.type = "sine"; o.frequency.value = freq;
         g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.4, t + .04); g.gain.exponentialRampToValueAtTime(.001, t + 1.2);
@@ -191,15 +192,23 @@
   function updateClock(){ const d=new Date(), day=DIAS[d.getDay()]; lockDate.textContent=`${day[0].toUpperCase()+day.slice(1)} ${d.getDate()} de ${MESES[d.getMonth()]}`; lockTime.textContent=`${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`; }
   updateClock(); setInterval(updateClock,15000);
 
-  // ---------- Real audio visualizer ----------
-  const visualizer=$("visualizer"); let audioCtx=null, analyser=null, sourceNode=null, vizFrame=null;
-  function ensureAnalyser(){
-    if(analyser || !audioEl.src) return;
-    try { const Ctx=window.AudioContext||window.webkitAudioContext; if(!Ctx) return; audioCtx=new Ctx(); sourceNode=audioCtx.createMediaElementSource(audioEl); analyser=audioCtx.createAnalyser(); analyser.fftSize=64; analyser.smoothingTimeConstant=.78; sourceNode.connect(analyser); analyser.connect(audioCtx.destination); } catch(_) { analyser=null; }
+  // ---------- Visualizer (decorative — deliberately does NOT hijack audioEl's
+  // output via createMediaElementSource: that permanently reroutes native
+  // playback through Web Audio, and if that context ever stays suspended —
+  // common on mobile without extra interaction — the track goes silent while
+  // still looking like it's playing. Not worth that risk for a bonus visual.) ----------
+  const visualizer=$("visualizer"); let vizTimer=null;
+  function startVisualizer(){
+    if (vizTimer) return;
+    const bars = visualizer.querySelectorAll("span");
+    visualizer.classList.add("live");
+    vizTimer = setInterval(() => { bars.forEach(bar => bar.style.height = `${18 + Math.random()*82}%`); }, 260);
   }
-  function drawVisualizer(){ if(!analyser){ vizFrame=requestAnimationFrame(drawVisualizer); return; } const data=new Uint8Array(analyser.frequencyBinCount); analyser.getByteFrequencyData(data); const bars=visualizer.querySelectorAll("span"); bars.forEach((bar,i)=>bar.style.height=`${Math.max(8,Math.min(100,(data[Math.floor(i*data.length/bars.length)]||0)/255*125))}%`); vizFrame=requestAnimationFrame(drawVisualizer); }
-  function startVisualizer(){ cancelAnimationFrame(vizFrame); visualizer.classList.add("live"); drawVisualizer(); }
-  function stopVisualizer(){ cancelAnimationFrame(vizFrame); vizFrame=null; visualizer.classList.remove("live"); visualizer.querySelectorAll("span").forEach(b=>b.style.height="10%"); }
+  function stopVisualizer(){
+    clearInterval(vizTimer); vizTimer=null;
+    visualizer.classList.remove("live");
+    visualizer.querySelectorAll("span").forEach(b=>b.style.height="10%");
+  }
 
   // ---------- Playlist/library ----------
   function filteredTracks(){
@@ -241,12 +250,12 @@
   function setPlayingIconState(playing){orbWrap.classList.toggle("spinning",playing);playIcon.innerHTML=playing?'<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>':'<path d="M8 5v14l12-7z"/>';}
 
   // ---------- Playback ----------
-  function playTrackAt(idx){ if(idx<0||idx>=playlist.length)return; currentIndex=idx; const t=playlist[idx]; audioEl.src=t.url; ensureAnalyser(); audioEl.play().catch(err=>{showToast("No se pudo reproducir este archivo");console.warn(err);}); updateNowPlayingUI();renderPlaylist(); updateMediaSession(); }
+  function playTrackAt(idx){ if(idx<0||idx>=playlist.length)return; currentIndex=idx; const t=playlist[idx]; audioEl.src=t.url; audioEl.play().catch(err=>{showToast("No se pudo reproducir este archivo");console.warn(err);}); updateNowPlayingUI();renderPlaylist(); updateMediaSession(); }
   function togglePlayPause(){ if(currentIndex<0){if(playlist.length)playTrackAt(0);return;} if(audioEl.paused)audioEl.play().catch(()=>showToast("El navegador bloqueó la reproducción"));else audioEl.pause(); }
   function getNextIndex(){if(!playlist.length)return-1;if(isShuffle){if(!shuffleOrder.length)rebuildShuffleOrder();const p=shuffleOrder.indexOf(currentIndex);return shuffleOrder[(p+1)%shuffleOrder.length];}return currentIndex<playlist.length-1?currentIndex+1:0;}
   function getPrevIndex(){if(!playlist.length)return-1;if(isShuffle){if(!shuffleOrder.length)rebuildShuffleOrder();const p=shuffleOrder.indexOf(currentIndex);return shuffleOrder[(p-1+shuffleOrder.length)%shuffleOrder.length];}return(currentIndex-1+playlist.length)%playlist.length;}
   function rebuildShuffleOrder(){shuffleOrder=playlist.map((_,i)=>i);for(let i=shuffleOrder.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffleOrder[i],shuffleOrder[j]]=[shuffleOrder[j],shuffleOrder[i]];}}
-  audioEl.addEventListener("play",()=>{setPlayingIconState(true);ensureAnalyser();audioCtx?.resume();startVisualizer();updateMediaSession();});
+  audioEl.addEventListener("play",()=>{setPlayingIconState(true);startVisualizer();updateMediaSession();});
   audioEl.addEventListener("pause",()=>{setPlayingIconState(false);stopVisualizer();updateMediaSession();});
   audioEl.addEventListener("timeupdate",()=>{if(!audioEl.duration)return;const pct=audioEl.currentTime/audioEl.duration*100;progressFill.style.width=`${pct}%`;timeCurrent.textContent=formatTime(audioEl.currentTime);});
   audioEl.addEventListener("loadedmetadata",()=>timeDuration.textContent=formatTime(audioEl.duration));
