@@ -1,0 +1,13 @@
+{
+  "format_version": "1.12.0",
+  "minecraft:geometry": [
+    {
+      "description": { "identifier": "geometry.uv_face_test", "texture_width": 24, "texture_height": 16 },
+      "bones": [
+        { "name": "root", "pivot": [0,0,0], "cubes": [
+          { "origin": [-2,0,-2], "size": [4,4,4], "uv": [0,0] }
+        ]}
+      ]
+    }
+  ]
+}

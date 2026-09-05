@@ -1,0 +1,21 @@
+{
+  "format_version": "1.12.0",
+  "minecraft:geometry": [
+    {
+      "description": {
+        "identifier": "geometry.uvtest_cube",
+        "texture_width": 32,
+        "texture_height": 16
+      },
+      "bones": [
+        {
+          "name": "root",
+          "pivot": [0, 0, 0],
+          "cubes": [
+            { "origin": [-4, 0, -4], "size": [8, 8, 8], "uv": [0, 0] }
+          ]
+        }
+      ]
+    }
+  ]
+}

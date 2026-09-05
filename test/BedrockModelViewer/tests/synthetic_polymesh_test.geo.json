@@ -1,0 +1,37 @@
+{
+  "format_version": "1.16.0",
+  "minecraft:geometry": [
+    {
+      "description": {
+        "identifier": "geometry.synthetic_polymesh_test",
+        "texture_width": 16,
+        "texture_height": 16
+      },
+      "bones": [
+        {
+          "name": "root",
+          "pivot": [0, 0, 0],
+          "cubes": [
+            { "origin": [-2, 0, -2], "size": [4, 4, 4], "uv": [0, 0] }
+          ]
+        },
+        {
+          "name": "unsupported_mesh_part",
+          "parent": "root",
+          "pivot": [0, 4, 0],
+          "cubes": [
+            {
+              "poly_mesh": {
+                "normalized_uvs": true,
+                "positions": [[0, 0, 0], [1, 0, 0], [1, 1, 0]],
+                "normals": [[0, 0, 1], [0, 0, 1], [0, 0, 1]],
+                "uvs": [[0, 0], [1, 0], [1, 1]],
+                "polys": [[[0, 0, 0], [1, 1, 1], [2, 2, 2]]]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
