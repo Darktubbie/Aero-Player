@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Bedrock Model Viewer</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <img src="assets/icon.svg" alt="" width="20" height="20" />
+    <span>Bedrock Model Viewer</span>
+  </div>
+  <div class="topbar-actions">
+    <input id="fileInput" type="file" multiple accept=".json,.geo.json,.png,.zip,.mcpack" hidden />
+    <button id="openBtn" class="btn btn-primary">Open files…</button>
+    <span id="statusText" class="status">No model loaded</span>
+  </div>
+</header>
+
+<main class="layout">
+
+  <aside class="panel panel-left">
+    <div class="panel-head">
+      <h2>Models</h2>
+      <span id="modelCount" class="muted">0</span>
+    </div>
+    <input id="modelSearch" type="search" placeholder="Search models…" class="search-input" />
+    <div id="modelList" class="model-list">
+      <p class="empty-hint">Open a .geo.json, a texture, or drop a whole resource pack (.zip / .mcpack).</p>
+    </div>
+    <div class="panel-foot">
+      <label class="texture-row">
+        <span>Texture</span>
+        <select id="textureSelect"><option value="">Auto</option></select>
+      </label>
+    </div>
+  </aside>
+
+  <section class="viewport-wrap" id="viewportWrap">
+    <div id="viewportCanvasHost" class="viewport-canvas-host"></div>
+
+    <div id="emptyState" class="empty-state">
+      <p>Drop a Bedrock geometry file, texture, or resource pack here</p>
+      <button id="emptyOpenBtn" class="btn btn-secondary">Open files…</button>
+    </div>
+
+    <div class="viewport-toolbar">
+      <button id="btnFrame" class="icon-btn" title="Frame model">⤢</button>
+      <button id="btnResetCamera" class="icon-btn" title="Reset camera">⟳</button>
+      <span class="divider"></span>
+      <label class="toggle"><input type="checkbox" id="toggleGrid" checked /> Grid</label>
+      <label class="toggle"><input type="checkbox" id="toggleAxes" /> Axes</label>
+      <label class="toggle"><input type="checkbox" id="toggleBones" /> Bones</label>
+      <label class="toggle"><input type="checkbox" id="togglePivots" /> Pivots</label>
+      <label class="toggle"><input type="checkbox" id="toggleWireframe" /> Wireframe</label>
+      <label class="toggle"><input type="checkbox" id="toggleAutoRotate" /> Auto-rotate</label>
+      <span class="divider"></span>
+      <select id="backgroundSelect" title="Background">
+        <option value="dark">Dark</option>
+        <option value="light">Light</option>
+        <option value="gradient">Gradient</option>
+      </select>
+    </div>
+  </section>
+
+  <aside class="panel panel-right">
+    <div class="panel-head"><h2>Model</h2></div>
+    <div id="modelInfo" class="info-block">
+      <p class="empty-hint">No model selected.</p>
+    </div>
+    <div id="warningsBlock" class="warnings-block" hidden></div>
+  </aside>
+
+</main>
+
+<footer class="statusbar">
+  <span id="footerHint">Drag &amp; drop files anywhere, or use Open files…</span>
+  <span id="formatHint">Supported: 1.10.0 and above &middot; Not supported: 1.8.x</span>
+</footer>
+
+<script src="vendor/jszip.min.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
