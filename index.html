@@ -35,11 +35,11 @@
         <span class="desktop-icon-label">Video</span>
       </button>
 
-      <button class="desktop-icon" id="youtubeIcon" aria-label="Abrir YouTube Online">
+      <button class="desktop-icon" id="onlineMusicIcon" aria-label="Abrir Música Online">
         <span class="desktop-icon-glyph glyph-video">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="12" rx="3" fill="#fff" fill-opacity="0.94"/><path d="M10 9l6 3-6 3V9z" fill="#e53935"/></svg>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="12" rx="3" fill="#fff" fill-opacity="0.94"/><path d="M10 9l6 3-6 3V9z" fill="#8b5cf6"/></svg>
         </span>
-        <span class="desktop-icon-label">YouTube Online</span>
+        <span class="desktop-icon-label">Música Online</span>
       </button>
 
       <button class="desktop-icon soon" data-app="Centro multimedia" aria-label="Centro multimedia">
@@ -188,12 +188,48 @@
     </div>
   </div>
 
-  <div class="window" id="youtubeWindow" data-title="YouTube Online">
-    <div class="window-titlebar"><div class="window-title"><span class="window-title-icon"></span>YouTube Online</div><div class="window-controls"><button class="win-btn win-min" data-action="min" aria-label="Minimizar">−</button><button class="win-btn win-max" data-action="max" aria-label="Maximizar">□</button><button class="win-btn win-close" data-action="close" aria-label="Cerrar">×</button></div></div>
-    <div class="window-body youtube-body">
-      <div class="youtube-toolbar"><input id="youtubeUrlInput" type="url" placeholder="Pega un enlace de YouTube…" aria-label="Enlace de YouTube" /><button id="youtubeLoadBtn" class="glossy-btn">Cargar</button></div>
-      <div class="youtube-note">Reproductor oficial incrustado. Aero Player no puede quitar los anuncios que YouTube decida mostrar.</div>
-      <iframe id="youtubeFrame" title="Reproductor de YouTube" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+  <div class="window" id="onlineMusicWindow" data-title="Música Online">
+    <div class="window-titlebar"><div class="window-title"><span class="window-title-icon"></span>Música Online</div><div class="window-controls"><button class="win-btn win-min" data-action="min" aria-label="Minimizar">−</button><button class="win-btn win-max" data-action="max" aria-label="Maximizar">□</button><button class="win-btn win-close" data-action="close" aria-label="Cerrar">×</button></div></div>
+    <div class="window-body onlinemusic-body">
+      <div class="onlinemusic-search-row">
+        <input id="onlineSearchInput" type="search" placeholder="Buscar canción o artista…" aria-label="Buscar música online" />
+        <button id="onlineSearchBtn" class="glossy-btn">Buscar</button>
+      </div>
+
+      <div class="onlinemusic-now" id="onlineNowCard">
+        <div class="onlinemusic-now-visual"><div id="onlinePlayerHost"></div></div>
+        <div class="onlinemusic-now-info">
+          <div class="onlinemusic-now-title" id="onlineNowTitle">Nada reproduciendo</div>
+          <div class="onlinemusic-now-artist" id="onlineNowArtist">Busca una canción para empezar</div>
+          <div class="progress-track onlinemusic-progress" id="onlineProgressTrack" tabindex="0" role="slider" aria-label="Progreso de la canción online"><div class="progress-fill" id="onlineProgressFill"></div></div>
+          <div class="onlinemusic-times"><span id="onlineTimeCurrent">0:00</span><span id="onlineTimeDuration">0:00</span></div>
+          <div class="onlinemusic-controls">
+            <button class="onlinemusic-ctrl-btn" id="onlinePrevBtn" title="Anterior" aria-label="Anterior">⏮</button>
+            <button class="onlinemusic-ctrl-btn primary" id="onlinePlayBtn" title="Reproducir" aria-label="Reproducir o pausar">▶</button>
+            <button class="onlinemusic-ctrl-btn" id="onlineNextBtn" title="Siguiente" aria-label="Siguiente">⏭</button>
+            <button class="onlinemusic-ctrl-btn" id="onlineRepeatBtn" title="Repetir" aria-label="Repetir">↻</button>
+            <button class="onlinemusic-ctrl-btn" id="onlineLikeBtn" title="Me gusta" aria-label="Añadir a favoritos online">☆</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="onlinemusic-list-head">
+        <span id="onlineListLabel">Resultados</span>
+        <button class="library-mini-btn" id="onlineShowLikesBtn">♥ Favoritos</button>
+      </div>
+      <div class="onlinemusic-list" id="onlineList">
+        <div class="onlinemusic-empty" id="onlineEmptyState">Busca una canción o artista para empezar a escuchar, sin anuncios de por medio.</div>
+      </div>
+
+      <div class="onlinemusic-note">
+        <span>Búsqueda vía Innertube (Piped). Reproducción con el reproductor oficial de YouTube. Aero Player no está afiliado con YouTube/Google.</span>
+        <button class="onlinemusic-settings-toggle" id="onlineSettingsToggle" title="Configurar servidor de búsqueda" aria-label="Configurar servidor de búsqueda">⚙</button>
+      </div>
+      <div class="onlinemusic-settings" id="onlineSettingsPanel" hidden>
+        <label for="onlineInstanceInput">Servidor de búsqueda (instancia Piped)</label>
+        <input id="onlineInstanceInput" type="url" placeholder="https://pipedapi.ejemplo.com" />
+        <button class="library-mini-btn" id="onlineInstanceSaveBtn">Guardar</button>
+      </div>
     </div>
   </div>
 

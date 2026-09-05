@@ -1019,8 +1019,42 @@ body {
 
 
 /* Aero Player 0.8 library / mobile enhancements */
-.playlist-head{gap:10px;align-items:center;flex-wrap:wrap}.playlist-heading{display:flex;align-items:center;gap:8px}.library-tools{display:flex;gap:6px;margin-left:auto}.library-search,.library-sort{border:1px solid rgba(44,112,155,.35);border-radius:9px;background:rgba(255,255,255,.78);padding:6px 9px;color:#164a69;min-width:110px;box-shadow:inset 0 1px 2px rgba(0,0,0,.08)}.library-search{width:150px}.track-row{position:relative}.track-row:focus-visible{outline:2px solid #2e86c1;outline-offset:-2px}.track-actions{margin-left:auto;display:flex;gap:3px;opacity:.55}.track-row:hover .track-actions,.track-row:focus-within .track-actions{opacity:1}.track-action{width:27px;height:27px;border:1px solid rgba(60,120,155,.25);border-radius:7px;background:linear-gradient(#fff,#dceefa);color:#24678b;font-weight:700;cursor:pointer}.track-action.danger{color:#b72e43}.library-mini-btn{border:1px solid rgba(43,110,150,.3);border-radius:8px;padding:6px 9px;background:linear-gradient(#fff,#d8edf8);color:#174f70;font-weight:700;cursor:pointer}.library-mini-btn.danger{color:#a22f43}.drop-target{outline:2px dashed rgba(46,134,193,.7);outline-offset:-5px}.progress-track{cursor:pointer}.progress-track:focus-visible{outline:2px solid #2e86c1}.youtube-body{display:flex;flex-direction:column;gap:10px;padding:12px;background:#e8f6ff}.youtube-toolbar{display:flex;gap:8px}.youtube-toolbar input{flex:1;border:1px solid rgba(43,110,150,.35);border-radius:9px;padding:9px 10px}.glossy-btn{border:1px solid rgba(43,110,150,.35);border-radius:9px;padding:8px 14px;background:linear-gradient(#fff,#bfe4f5);color:#164a69;font-weight:700;cursor:pointer}.youtube-note{font-size:12px;color:#41677d;background:rgba(255,255,255,.65);border-radius:8px;padding:7px}.youtube-body iframe{width:100%;height:min(55vh,420px);border:0;border-radius:10px;background:#000;box-shadow:0 2px 10px rgba(0,0,0,.18)}
-@media (max-width:700px){.desktop-icons{gap:8px}.desktop-icon{transform:scale(.9);transform-origin:top left}.window{inset:6px!important;width:auto!important;height:auto!important}.window-titlebar{min-height:38px}.lock-widget-sky{padding:10px}.split-container{min-height:0}.playlist-head{padding:8px}.library-tools{width:100%;margin-left:0}.library-search{flex:1;width:auto}.track-actions{opacity:1}.track-row{min-height:58px}.dock-row{flex-wrap:wrap;justify-content:center}.library-mini-btn{font-size:11px}.youtube-body iframe{height:48vh}.youtube-toolbar{flex-direction:column}}
+.playlist-head{gap:10px;align-items:center;flex-wrap:wrap}.playlist-heading{display:flex;align-items:center;gap:8px}.library-tools{display:flex;gap:6px;margin-left:auto}.library-search,.library-sort{border:1px solid rgba(44,112,155,.35);border-radius:9px;background:rgba(255,255,255,.78);padding:6px 9px;color:#164a69;min-width:110px;box-shadow:inset 0 1px 2px rgba(0,0,0,.08)}.library-search{width:150px}.track-row{position:relative}.track-row:focus-visible{outline:2px solid #2e86c1;outline-offset:-2px}.track-actions{margin-left:auto;display:flex;gap:3px;opacity:.55}.track-row:hover .track-actions,.track-row:focus-within .track-actions{opacity:1}.track-action{width:27px;height:27px;border:1px solid rgba(60,120,155,.25);border-radius:7px;background:linear-gradient(#fff,#dceefa);color:#24678b;font-weight:700;cursor:pointer}.track-action.danger{color:#b72e43}.library-mini-btn{border:1px solid rgba(43,110,150,.3);border-radius:8px;padding:6px 9px;background:linear-gradient(#fff,#d8edf8);color:#174f70;font-weight:700;cursor:pointer}.library-mini-btn.danger{color:#a22f43}.drop-target{outline:2px dashed rgba(46,134,193,.7);outline-offset:-5px}.progress-track{cursor:pointer}.progress-track:focus-visible{outline:2px solid #2e86c1}.onlinemusic-body{display:flex;flex-direction:column;gap:10px;padding:12px;background:#f1ecfb;overflow:auto}
+.onlinemusic-search-row{display:flex;gap:8px}
+.onlinemusic-search-row input{flex:1;border:1px solid rgba(124,90,220,.35);border-radius:9px;padding:9px 10px;background:rgba(255,255,255,.85);color:#3a2c66}
+.glossy-btn{border:1px solid rgba(43,110,150,.35);border-radius:9px;padding:8px 14px;background:linear-gradient(#fff,#bfe4f5);color:#164a69;font-weight:700;cursor:pointer}
+#onlineSearchBtn{border-color:rgba(124,90,220,.4);background:linear-gradient(#fff,#e2d6fb);color:#4a2f8f}
+.onlinemusic-now{display:flex;gap:12px;background:rgba(255,255,255,.65);border-radius:12px;padding:10px;box-shadow:inset 0 1px 2px rgba(0,0,0,.06)}
+.onlinemusic-now-visual{flex:0 0 128px;height:96px;border-radius:9px;overflow:hidden;background:#0b0620;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.onlinemusic-now-visual,#onlinePlayerHost{width:100%;height:100%}
+.onlinemusic-now-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;justify-content:center}
+.onlinemusic-now-title{font-weight:700;color:#3a2c66;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.onlinemusic-now-artist{font-size:12px;color:#6a5aa0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.onlinemusic-progress{height:6px;border-radius:4px;background:rgba(124,90,220,.18);position:relative;cursor:pointer}
+.onlinemusic-progress .progress-fill{position:absolute;left:0;top:0;height:100%;border-radius:4px;background:linear-gradient(90deg,#8b5cf6,#c9a6ff);width:0%}
+.onlinemusic-times{display:flex;justify-content:space-between;font-size:11px;color:#6a5aa0}
+.onlinemusic-controls{display:flex;gap:6px;align-items:center}
+.onlinemusic-ctrl-btn{width:32px;height:32px;border-radius:50%;border:1px solid rgba(124,90,220,.3);background:linear-gradient(#fff,#e6dbfb);color:#5a3fae;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.onlinemusic-ctrl-btn.active{background:linear-gradient(#8b5cf6,#7c4dea);color:#fff}
+.onlinemusic-ctrl-btn.primary{width:38px;height:38px}
+.onlinemusic-list-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.onlinemusic-list-head span{font-weight:700;color:#3a2c66;font-size:13px}
+.onlinemusic-list{flex:1;min-height:140px;max-height:38vh;overflow:auto;display:flex;flex-direction:column;gap:4px}
+.onlinemusic-empty{padding:14px;text-align:center;color:#6a5aa0;font-size:13px}
+.onlinemusic-item{display:flex;align-items:center;gap:8px;padding:6px;border-radius:9px;background:rgba(255,255,255,.55);cursor:pointer}
+.onlinemusic-item:hover,.onlinemusic-item:focus-visible{background:rgba(255,255,255,.85)}
+.onlinemusic-item.playing{outline:2px solid #8b5cf6}
+.onlinemusic-item-thumb{width:44px;height:44px;border-radius:7px;background-size:cover;background-position:center;background-color:#dccdf7;flex:0 0 44px}
+.onlinemusic-item-info{flex:1;min-width:0}
+.onlinemusic-item-info .name{font-weight:600;color:#3a2c66;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}
+.onlinemusic-item-info .sub{font-size:11px;color:#6a5aa0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.onlinemusic-item-actions{display:flex;gap:3px}
+.onlinemusic-note{font-size:11px;color:#5a4a8a;background:rgba(255,255,255,.55);border-radius:8px;padding:7px;display:flex;align-items:center;gap:8px}
+.onlinemusic-note span{flex:1}
+.onlinemusic-settings-toggle{border:1px solid rgba(124,90,220,.35);border-radius:7px;background:rgba(255,255,255,.7);cursor:pointer;width:26px;height:26px}
+.onlinemusic-settings{display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:rgba(255,255,255,.6);border-radius:9px;padding:8px;font-size:12px;color:#3a2c66}
+.onlinemusic-settings input{flex:1;min-width:160px;border:1px solid rgba(124,90,220,.35);border-radius:8px;padding:6px 8px}
+@media (max-width:700px){.desktop-icons{gap:8px}.desktop-icon{transform:scale(.9);transform-origin:top left}.window{inset:6px!important;width:auto!important;height:auto!important}.window-titlebar{min-height:38px}.lock-widget-sky{padding:10px}.split-container{min-height:0}.playlist-head{padding:8px}.library-tools{width:100%;margin-left:0}.library-search{flex:1;width:auto}.track-actions{opacity:1}.track-row{min-height:58px}.dock-row{flex-wrap:wrap;justify-content:center}.library-mini-btn{font-size:11px}.onlinemusic-now{flex-direction:column}.onlinemusic-now-visual{flex:none;width:100%;height:44vw;max-height:160px}.onlinemusic-search-row{flex-direction:column}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}.visualizer{transition:none!important}}
 
 /* ---------- Personalizar (wallpaper + ambient music picker) ---------- */
