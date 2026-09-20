@@ -6,3 +6,5 @@ app-backup-estable/
 *.iml
 .idea/
 .DS_Store
+*.jks
+*.keystore

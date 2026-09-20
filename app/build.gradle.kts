@@ -11,15 +11,25 @@ android {
         applicationId = "com.darktubbie.aeroplayer"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 3
+        versionName = "0.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file("../aero-player-release.jks")
+            storePassword = providers.gradleProperty("AERO_STORE_PASSWORD").orNull
+            keyAlias = providers.gradleProperty("AERO_KEY_ALIAS").orNull ?: "aero-player"
+            keyPassword = providers.gradleProperty("AERO_KEY_PASSWORD").orNull
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
         }
 
         debug {
@@ -53,6 +63,11 @@ dependencies {
 
     implementation("androidx.media3:media3-exoplayer:1.11.0")
     implementation("androidx.media3:media3-session:1.11.0")
+
+    // Fase 8: escribir el .ape en la carpeta SAF ya seleccionada
+    // por el usuario (DocumentFile es la forma estándar de crear/
+    // sobrescribir archivos dentro de un árbol SAF).
+    implementation("androidx.documentfile:documentfile:1.0.1")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
 }

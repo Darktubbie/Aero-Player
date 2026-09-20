@@ -40,7 +40,8 @@ fun AlbumArt(
     path: String?,
     artist: String,
     album: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    highRes: Boolean = false
 ) {
 
     val context =
@@ -49,7 +50,8 @@ fun AlbumArt(
     var bitmap by remember(
         path,
         artist,
-        album
+        album,
+        highRes
     ) {
         mutableStateOf<Bitmap?>(null)
     }
@@ -57,7 +59,8 @@ fun AlbumArt(
     LaunchedEffect(
         path,
         artist,
-        album
+        album,
+        highRes
     ) {
 
         if (
@@ -81,7 +84,10 @@ fun AlbumArt(
                     artist,
 
                 album =
-                    album
+                    album,
+
+                highRes =
+                    highRes
             )
     }
 

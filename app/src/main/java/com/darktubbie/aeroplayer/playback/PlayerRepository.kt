@@ -338,6 +338,24 @@ class PlayerRepository(
                 .coerceAtLeast(0L)
     }
 
+    /**
+     * Lee la posición actual directamente del controller, sin
+     * pasar por [_positionMs] ni depender de que alguna pantalla
+     * esté llamando a [refreshPosition] periódicamente.
+     *
+     * Pensada para el sistema de Aero Player Effects (Fase 7): un
+     * `.ape` necesita sondear la posición para saber cuándo disparar
+     * un efecto, incluso si el usuario no está viendo la pantalla
+     * de Now Playing en ese momento. Es una lectura puntual, no un
+     * observable — quien la use decide su propia cadencia de
+     * sondeo.
+     */
+    fun currentPositionMs(): Long =
+        controller
+            ?.currentPosition
+            ?.coerceAtLeast(0L)
+            ?: 0L
+
     fun toggleShuffle() {
 
         val controller =

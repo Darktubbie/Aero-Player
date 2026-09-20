@@ -35,13 +35,34 @@ import java.util.concurrent.ConcurrentHashMap
  */
 object AlbumArtCache {
 
-    private const val TARGET_SIZE = 192
+    private const val TARGET_SIZE_SMALL = 192
+
+    /**
+     * Tamaño más grande, solo para la portada del reproductor
+     * completo (Now Playing), que se muestra a 260dp — 192px se
+     * veía notoriamente borroso ahí, aunque para las miniaturas
+     * pequeñas (lista, MiniPlayer) 192px sigue siendo de sobra.
+     */
+    private const val TARGET_SIZE_LARGE = 480
 
     private const val MEMORY_CACHE_SIZE = 40
+
+    /**
+     * Caché en RAM aparte para las portadas grandes: son más
+     * pesadas que las miniaturas, así que se les da una capacidad
+     * menor a propósito (no hace falta guardar 40 portadas grandes
+     * en RAM — normalmente solo importa la de la canción actual).
+     */
+    private const val LARGE_MEMORY_CACHE_SIZE = 6
 
     private val memoryCache =
         LruCache<String, Bitmap>(
             MEMORY_CACHE_SIZE
+        )
+
+    private val largeMemoryCache =
+        LruCache<String, Bitmap>(
+            LARGE_MEMORY_CACHE_SIZE
         )
 
     /*
@@ -69,17 +90,29 @@ object AlbumArtCache {
      * @param path Ruta física del archivo de audio.
      * @param artist Artista de la canción.
      * @param album Álbum de la canción.
+     * @param highRes si es true, decodifica/cachea una versión más
+     * grande ([TARGET_SIZE_LARGE]), pensada para la portada grande
+     * de Now Playing. Cada tamaño tiene su propia entrada en disco
+     * y su propia caché en RAM — pedir la miniatura pequeña de una
+     * canción no afecta ni reemplaza su versión grande, y viceversa.
      */
     suspend fun get(
         context: Context,
         path: String,
         artist: String,
-        album: String
+        album: String,
+        highRes: Boolean = false
     ): Bitmap? {
 
         if (path.isBlank()) {
             return null
         }
+
+        val targetSize =
+            if (highRes) TARGET_SIZE_LARGE else TARGET_SIZE_SMALL
+
+        val activeMemoryCache =
+            if (highRes) largeMemoryCache else memoryCache
 
         /*
          * createKey() calcula un SHA-256 (MessageDigest +
@@ -90,7 +123,7 @@ object AlbumArtCache {
          * en cada composición de AlbumArt, incluso cuando
          * el resultado ya está en la caché de RAM.
          */
-        val key =
+        val baseKey =
             withContext(
                 Dispatchers.Default
             ) {
@@ -102,10 +135,13 @@ object AlbumArtCache {
                 )
             }
 
+        val key =
+            if (highRes) "$baseKey-large" else baseKey
+
         /*
          * Primero RAM.
          */
-        memoryCache.get(key)?.let {
+        activeMemoryCache.get(key)?.let {
             return it
         }
 
@@ -121,7 +157,11 @@ object AlbumArtCache {
         val noneFile =
             File(
                 cacheDirectory,
-                "$key.none"
+
+                // El marcador "sin portada" es el mismo para ambos
+                // tamaños: si el archivo no tiene artwork embebido,
+                // eso no cambia según el tamaño pedido.
+                "$baseKey.none"
             )
 
         /*
@@ -148,7 +188,7 @@ object AlbumArtCache {
 
         if (diskBitmap != null) {
 
-            memoryCache.put(
+            activeMemoryCache.put(
                 key,
                 diskBitmap
             )
@@ -186,7 +226,7 @@ object AlbumArtCache {
              * Otra corrutina pudo haber terminado el trabajo
              * mientras esperábamos el Mutex.
              */
-            memoryCache.get(key)?.let {
+            activeMemoryCache.get(key)?.let {
                 return@withLock it
             }
 
@@ -216,7 +256,7 @@ object AlbumArtCache {
                 existingBitmap != null
             ) {
 
-                memoryCache.put(
+                activeMemoryCache.put(
                     key,
                     existingBitmap
                 )
@@ -246,7 +286,8 @@ object AlbumArtCache {
                     ) {
 
                         extractArtwork(
-                            path
+                            path,
+                            targetSize
                         )
                     }
                 }
@@ -256,7 +297,7 @@ object AlbumArtCache {
                 /*
                  * RAM.
                  */
-                memoryCache.put(
+                activeMemoryCache.put(
                     key,
                     bitmap
                 )
@@ -301,7 +342,8 @@ object AlbumArtCache {
      * Extrae la portada embebida del archivo de audio.
      */
     private fun extractArtwork(
-        path: String
+        path: String,
+        targetSize: Int
     ): Bitmap? {
 
         val retriever =
@@ -344,8 +386,8 @@ object AlbumArtCache {
                 1
 
             while (
-                bounds.outWidth / sampleSize > TARGET_SIZE ||
-                bounds.outHeight / sampleSize > TARGET_SIZE
+                bounds.outWidth / sampleSize > targetSize ||
+                bounds.outHeight / sampleSize > targetSize
             ) {
 
                 sampleSize *= 2

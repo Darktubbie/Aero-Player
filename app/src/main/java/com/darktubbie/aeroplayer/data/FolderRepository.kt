@@ -74,7 +74,13 @@ class FolderRepository(
         try {
             context.contentResolver.takePersistableUriPermission(
                 uri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION
+
+                // Fase 8: además de lectura (para escanear música),
+                // ahora también se persiste el permiso de escritura,
+                // necesario para que el editor de .ape pueda crear/
+                // sobrescribir archivos dentro de esta carpeta.
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             )
         } catch (_: SecurityException) {
         }
@@ -120,6 +126,49 @@ class FolderRepository(
      * RESOLUCIÓN DE TREE URI -> RUTA DE ARCHIVO
      * ---------------------------------------------------------
      */
+
+    /**
+     * Busca, entre las carpetas SAF ya seleccionadas, la que
+     * contiene el archivo dado (Fase 8: guardar un `.ape` junto a
+     * su canción reutilizando el permiso persistente ya concedido
+     * sobre esa carpeta, en vez de pedir uno nuevo).
+     *
+     * Si varias carpetas seleccionadas contuvieran el archivo (una
+     * anidada dentro de otra), devuelve la más específica.
+     */
+    fun findContainingFolder(
+        filePath: String,
+        folders: List<String>
+    ): MatchedFolder? {
+
+        val normalizedFile =
+            normalizePath(filePath)
+
+        return folders
+            .mapNotNull { folderUriString ->
+
+                val uri =
+                    Uri.parse(folderUriString)
+
+                val rootPath =
+                    treeUriToPath(uri)
+                        ?.let { normalizePath(it) }
+                        ?: return@mapNotNull null
+
+                val contains =
+                    normalizedFile == rootPath ||
+                    normalizedFile.startsWith("$rootPath/")
+
+                if (contains) {
+                    MatchedFolder(uri, rootPath)
+                } else {
+                    null
+                }
+            }
+            .maxByOrNull {
+                it.rootPath.length
+            }
+    }
 
     /**
      * Convierte cada tree URI seleccionado en una ruta de archivo
@@ -273,3 +322,14 @@ class FolderRepository(
             .trimEnd('/')
     }
 }
+
+/**
+ * Una carpeta SAF ya seleccionada que contiene un archivo dado, con
+ * su tree URI (para pedir permiso/crear archivos ahí) y su ruta
+ * raíz ya resuelta (para calcular la subcarpeta relativa). Ver
+ * [FolderRepository.findContainingFolder].
+ */
+data class MatchedFolder(
+    val treeUri: Uri,
+    val rootPath: String
+)

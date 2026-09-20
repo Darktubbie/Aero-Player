@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Repeat
@@ -71,7 +72,8 @@ fun NowPlayingScreen(
     onSeek: (Long) -> Unit,
     onToggleShuffle: () -> Unit,
     onCycleRepeat: () -> Unit,
-    onTick: () -> Unit
+    onTick: () -> Unit,
+    onOpenApeEditor: () -> Unit
 ) {
 
     /*
@@ -137,6 +139,26 @@ fun NowPlayingScreen(
 
                     fontSize = 18.sp
                 )
+
+                Spacer(
+                    modifier =
+                        Modifier.weight(1f)
+                )
+
+                IconButton(
+                    onClick = onOpenApeEditor
+                ) {
+
+                    Icon(
+                        imageVector =
+                            Icons.Default.Edit,
+
+                        contentDescription =
+                            "Editar efectos (.ape)",
+
+                        tint = Color.White
+                    )
+                }
             }
 
             Spacer(
@@ -156,6 +178,7 @@ fun NowPlayingScreen(
                     path = track.path,
                     artist = track.artist,
                     album = track.album,
+                    highRes = true,
 
                     modifier =
                         Modifier
@@ -458,4 +481,45 @@ private fun formatTime(
         minutes,
         seconds
     )
+}
+
+/**
+ * Contenido de la sección "Reproductor" (Fase 1) cuando no hay
+ * ninguna canción activa todavía. Convertir el reproductor en una
+ * sección principal a todos los efectos (estado persistente entre
+ * navegaciones, etc.) es alcance de la Fase 2 — aquí solo se cubre
+ * el caso de "destino de navegación sin contenido que mostrar".
+ */
+@Composable
+fun EmptyNowPlayingPlaceholder() {
+
+    AeroBackground {
+
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(20.dp),
+
+            horizontalAlignment =
+                Alignment.CenterHorizontally,
+
+            verticalArrangement =
+                Arrangement.Center
+        ) {
+
+            Text(
+                text = "Nada sonando todavía",
+                color = Color.White,
+                fontSize = 18.sp
+            )
+
+            Text(
+                text = "Elige una canción desde Música o Álbumes.",
+                color = AeroColors.OnBackgroundSubtitle,
+                fontSize = 13.sp,
+                modifier = Modifier.padding(top = 6.dp)
+            )
+        }
+    }
 }

@@ -350,6 +350,14 @@ class MainViewModel(
         playerRepository.refreshPosition()
     }
 
+    /**
+     * Ver [PlayerRepository.currentPositionMs] — usado por el
+     * sistema de Aero Player Effects (Fase 7) para sondear la
+     * posición sin depender de la pantalla Now Playing.
+     */
+    fun currentPositionMs(): Long =
+        playerRepository.currentPositionMs()
+
     fun toggleShuffle() {
         playerRepository.toggleShuffle()
     }

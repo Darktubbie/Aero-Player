@@ -8,7 +8,7 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@drawable/ic_launcher_v2"
         android:label="Aero Player"
         android:supportsRtl="true"
         android:theme="@style/Theme.AeroPlayer">

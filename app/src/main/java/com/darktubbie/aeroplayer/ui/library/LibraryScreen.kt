@@ -24,7 +24,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,7 +38,6 @@ import com.darktubbie.aeroplayer.data.Artist
 import com.darktubbie.aeroplayer.data.AudioTrack
 import com.darktubbie.aeroplayer.ui.components.AeroBackground
 import com.darktubbie.aeroplayer.ui.components.AlbumArt
-import com.darktubbie.aeroplayer.ui.components.MiniPlayer
 import com.darktubbie.aeroplayer.ui.theme.AeroColors
 
 /*
@@ -70,8 +68,6 @@ fun LibraryScreen(
     onRemoveFolder: (String) -> Unit,
     onScan: () -> Unit,
     onTrackClick: (AudioTrack) -> Unit,
-    onPlayPauseClick: () -> Unit,
-    onOpenNowPlaying: () -> Unit,
     onTabSelected: (LibraryTab) -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onSortOrderChange: (SortOrder) -> Unit,
@@ -79,17 +75,6 @@ fun LibraryScreen(
     onArtistSelected: (String) -> Unit,
     onClearArtistFilter: () -> Unit
 ) {
-
-    val currentTrack =
-        remember(
-            tracks,
-            currentTrackUri
-        ) {
-
-            tracks.firstOrNull {
-                it.uri == currentTrackUri
-            }
-        }
 
     AeroBackground {
 
@@ -1069,85 +1054,14 @@ fun LibraryScreen(
                     )
             )
 
-            if (currentTrack != null) {
-
-                MiniPlayer(
-                    track = currentTrack,
-                    isPlaying = isPlaying,
-                    onPlayPauseClick = onPlayPauseClick,
-                    onOpenNowPlaying = onOpenNowPlaying
-                )
-
-                Spacer(
-                    modifier =
-                        Modifier.height(10.dp)
-                )
-            }
-
-            Row(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .clip(
-                            RoundedCornerShape(
-                                24.dp
-                            )
-                        )
-                        .background(
-                            Color.White.copy(
-                                alpha = 0.48f
-                            )
-                        )
-                        .border(
-                            1.dp,
-                            Color.White.copy(
-                                alpha = 0.72f
-                            ),
-                            RoundedCornerShape(
-                                24.dp
-                            )
-                        )
-                        .padding(
-                            vertical = 13.dp
-                        ),
-
-                horizontalArrangement =
-                    Arrangement.SpaceEvenly
-            ) {
-
-                Text(
-                    text =
-                        "Library",
-
-                    color =
-                        AeroColors.Accent,
-
-                    fontSize =
-                        14.sp
-                )
-
-                Text(
-                    text =
-                        "Favorites",
-
-                    color =
-                        AeroColors.TextMuted,
-
-                    fontSize =
-                        14.sp
-                )
-
-                Text(
-                    text =
-                        "Playlists",
-
-                    color =
-                        AeroColors.TextMuted,
-
-                    fontSize =
-                        14.sp
-                )
-            }
+            /*
+             * El MiniPlayer que antes vivía aquí (visible solo
+             * dentro de Música/Álbumes) pasó a ser global en
+             * MainActivity a partir de la Fase 2: ahora se ve desde
+             * cualquier sección, no solo desde la biblioteca —
+             * coherente con que el reproductor es una sección
+             * principal de la app.
+             */
         }
     }
 }
