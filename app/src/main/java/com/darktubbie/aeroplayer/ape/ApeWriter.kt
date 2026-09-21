@@ -10,8 +10,9 @@ import org.json.JSONObject
 import java.io.File
 
 /**
- * Resultado de intentar guardar un `.ape` (Fase 8 del plan de
- * evolución visual: editor básico de APE).
+ * Resultado de intentar guardar un archivo de efectos (Fase 8 del
+ * plan de evolución visual: editor básico de APE). El archivo en
+ * disco siempre queda con extensión `.aero` — ver [ApeRepository].
  */
 sealed class ApeSaveResult {
     data class Success(val path: String) : ApeSaveResult()
@@ -19,7 +20,8 @@ sealed class ApeSaveResult {
 }
 
 /**
- * Escribe/reemplaza el `.ape` hermano de una canción.
+ * Escribe/reemplaza el archivo de efectos (`.aero`) hermano de una
+ * canción, migrando automáticamente un `.ape` anterior si existe.
  *
  * La app no tiene permiso general de escritura sobre el
  * almacenamiento (solo lectura de audio) — por eso esto reutiliza
@@ -117,21 +119,25 @@ object ApeWriter {
                     audioFile.nameWithoutExtension
                 )
 
-            target.writeText(json, Charsets.UTF_8)
+            target.target.writeText(json, Charsets.UTF_8)
 
             if (
-                !target.exists() ||
-                target.length() == 0L
+                !target.target.exists() ||
+                target.target.length() == 0L
             ) {
 
                 return ApeSaveResult.Error(
                     "Se intentó guardar en " +
-                    "${target.absolutePath} pero el archivo no " +
-                    "quedó ahí después de escribirlo."
+                    "${target.target.absolutePath} pero el " +
+                    "archivo no quedó ahí después de escribirlo."
                 )
             }
 
-            ApeSaveResult.Success(target.absolutePath)
+            // El .aero nuevo ya está a salvo en disco — recién
+            // ahora es seguro borrar el .ape viejo que se migró.
+            target.legacyFileToDelete?.delete()
+
+            ApeSaveResult.Success(target.target.absolutePath)
 
         } catch (_: Exception) {
 
@@ -215,31 +221,59 @@ object ApeWriter {
                 }
             }
 
-            val fileName =
-                "${audioFile.nameWithoutExtension}.ape"
+            val currentName =
+                "${audioFile.nameWithoutExtension}." +
+                ApeRepository.CURRENT_EXTENSION
+
+            val legacyName =
+                "${audioFile.nameWithoutExtension}." +
+                ApeRepository.LEGACY_EXTENSION
+
+            val siblingFiles =
+                directory.listFiles().toList()
 
             // Insensible a mayúsculas, igual que en la lectura
-            // (ApeRepository): si ya existe un .ape para esta
+            // (ApeRepository): si ya existe un .aero para esta
             // canción con cualquier combinación de mayúsculas, se
             // sobrescribe ese en vez de crear uno duplicado.
-            val existing =
-                directory.listFiles().firstOrNull {
+            val existingCurrent =
+                siblingFiles.firstOrNull {
 
                     it.isFile &&
                     it.name?.equals(
-                        fileName,
+                        currentName,
                         ignoreCase = true
                     ) == true
                 }
 
+            // Si no hay .aero pero sí un .ape (formato anterior),
+            // se migra: se crea el .aero nuevo y, recién después de
+            // escribirlo con éxito, se borra este .ape.
+            val legacyToDelete =
+                if (existingCurrent == null) {
+
+                    siblingFiles.firstOrNull {
+
+                        it.isFile &&
+                        it.name?.equals(
+                            legacyName,
+                            ignoreCase = true
+                        ) == true
+                    }
+
+                } else {
+
+                    null
+                }
+
             val target =
-                existing
+                existingCurrent
                     ?: directory.createFile(
                         "application/json",
-                        fileName
+                        currentName
                     )
                     ?: return ApeSaveResult.Error(
-                        "No se pudo crear el archivo .ape."
+                        "No se pudo crear el archivo .aero."
                     )
 
             context.contentResolver
@@ -254,8 +288,12 @@ object ApeWriter {
                     "No se pudo abrir el archivo para escribir."
                 )
 
+            // El .aero nuevo ya está a salvo — recién ahora es
+            // seguro borrar el .ape viejo que se migró.
+            legacyToDelete?.delete()
+
             ApeSaveResult.Success(
-                "$parentPath/$fileName (vía carpeta concedida)"
+                "$parentPath/$currentName (vía carpeta concedida)"
             )
 
         } catch (e: Exception) {
@@ -267,31 +305,69 @@ object ApeWriter {
     }
 
     /**
-     * Busca un `.ape` ya existente junto a la canción (insensible a
-     * mayúsculas, igual que [ApeRepository]) para sobrescribirlo en
-     * vez de crear uno duplicado con otra combinación de mayúsculas.
+     * Busca un archivo de efectos ya existente junto a la canción
+     * (con cualquiera de las dos extensiones, ver
+     * [ApeRepository.findEffectsCandidate]) para decidir dónde
+     * guardar:
+     *
+     * - Si ya hay un `.aero`, se sobrescribe ese mismo archivo.
+     * - Si solo hay un `.ape` (formato anterior), se migra: el
+     *   nuevo contenido se escribe en un `.aero` con el mismo
+     *   nombre base, y el `.ape` viejo se devuelve en
+     *   [Resolution.legacyFileToDelete] para que quien llama lo
+     *   borre recién después de confirmar que el `.aero` nuevo se
+     *   escribió bien — nunca se borra el original antes de tener
+     *   el reemplazo a salvo.
+     * - Si no hay ninguno, se crea un `.aero` nuevo.
      */
+    private data class Resolution(
+        val target: File,
+        val legacyFileToDelete: File?
+    )
+
     private fun resolveTargetFile(
         parent: File,
         baseName: String
-    ): File {
+    ): Resolution {
 
         val existing =
-            parent.listFiles { candidate ->
+            ApeRepository.findEffectsCandidate(
+                parent.listFiles()?.toList() ?: emptyList(),
+                baseName
+            )
 
-                candidate.isFile &&
-                candidate.extension.equals(
-                    "ape",
-                    ignoreCase = true
-                ) &&
-                candidate.nameWithoutExtension.equals(
-                    baseName,
-                    ignoreCase = true
+        return when {
+
+            existing == null ->
+                Resolution(
+                    target =
+                        File(
+                            parent,
+                            "$baseName.${ApeRepository.CURRENT_EXTENSION}"
+                        ),
+                    legacyFileToDelete = null
                 )
-            }?.firstOrNull()
 
-        return existing
-            ?: File(parent, "$baseName.ape")
+            existing.extension.equals(
+                ApeRepository.CURRENT_EXTENSION,
+                ignoreCase = true
+            ) ->
+                Resolution(
+                    target = existing,
+                    legacyFileToDelete = null
+                )
+
+            else ->
+                // Extensión legacy (.ape): migrar.
+                Resolution(
+                    target =
+                        File(
+                            parent,
+                            "$baseName.${ApeRepository.CURRENT_EXTENSION}"
+                        ),
+                    legacyFileToDelete = existing
+                )
+        }
     }
 
     private fun buildJson(

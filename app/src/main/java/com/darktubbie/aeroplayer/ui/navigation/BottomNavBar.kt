@@ -55,11 +55,11 @@ fun BottomNavBar(
                     RoundedCornerShape(24.dp)
                 )
                 .background(
-                    Color.White.copy(alpha = 0.48f)
+                    AeroColors.GlassSurfaceBase.copy(alpha = 0.48f)
                 )
                 .border(
                     1.dp,
-                    Color.White.copy(alpha = 0.72f),
+                    AeroColors.GlassSurfaceBase.copy(alpha = 0.72f),
                     RoundedCornerShape(24.dp)
                 )
                 .padding(vertical = 10.dp),

@@ -12,18 +12,27 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,6 +73,7 @@ fun LibraryScreen(
     searchQuery: String,
     sortOrder: SortOrder,
     artistFilter: String?,
+    favoritePaths: Set<String>,
     onAddFolder: () -> Unit,
     onRemoveFolder: (String) -> Unit,
     onScan: () -> Unit,
@@ -73,7 +83,9 @@ fun LibraryScreen(
     onSortOrderChange: (SortOrder) -> Unit,
     onAlbumClick: (Album) -> Unit,
     onArtistSelected: (String) -> Unit,
-    onClearArtistFilter: () -> Unit
+    onClearArtistFilter: () -> Unit,
+    onToggleFavorite: (AudioTrack) -> Unit,
+    onAddToPlaylist: (AudioTrack) -> Unit
 ) {
 
     AeroBackground {
@@ -129,13 +141,13 @@ fun LibraryScreen(
                                 CircleShape
                             )
                             .background(
-                                Color.White.copy(
+                                AeroColors.GlassSurfaceBase.copy(
                                     alpha = 0.22f
                                 )
                             )
                             .border(
                                 1.dp,
-                                Color.White.copy(
+                                AeroColors.GlassSurfaceBase.copy(
                                     alpha = 0.55f
                                 ),
                                 CircleShape
@@ -179,13 +191,13 @@ fun LibraryScreen(
                             )
                         )
                         .background(
-                            Color.White.copy(
+                            AeroColors.GlassSurfaceBase.copy(
                                 alpha = 0.38f
                             )
                         )
                         .border(
                             1.dp,
-                            Color.White.copy(
+                            AeroColors.GlassSurfaceBase.copy(
                                 alpha = 0.7f
                             ),
                             RoundedCornerShape(
@@ -444,7 +456,7 @@ fun LibraryScreen(
                                         )
                                     )
                                     .background(
-                                        Color.White.copy(
+                                        AeroColors.GlassSurfaceBase.copy(
                                             alpha = 0.55f
                                         )
                                     )
@@ -689,36 +701,9 @@ fun LibraryScreen(
                                     Arrangement.End
                             ) {
 
-                                Text(
-                                    text =
-                                        if (
-                                            sortOrder ==
-                                            SortOrder.TITLE
-                                        ) {
-                                            "Sort: Title"
-                                        } else {
-                                            "Sort: Artist"
-                                        },
-
-                                    color =
-                                        AeroColors.Accent,
-
-                                    fontSize = 12.sp,
-
-                                    modifier =
-                                        Modifier.clickable {
-
-                                            onSortOrderChange(
-                                                if (
-                                                    sortOrder ==
-                                                    SortOrder.TITLE
-                                                ) {
-                                                    SortOrder.ARTIST
-                                                } else {
-                                                    SortOrder.TITLE
-                                                }
-                                            )
-                                        }
+                                SortOrderSelector(
+                                    sortOrder = sortOrder,
+                                    onSortOrderChange = onSortOrderChange
                                 )
                             }
                         }
@@ -761,7 +746,7 @@ fun LibraryScreen(
                                                 )
                                             )
                                             .background(
-                                                Color.White.copy(
+                                                AeroColors.GlassSurfaceBase.copy(
                                                     alpha =
                                                         if (isCurrentTrack) {
                                                             0.60f
@@ -901,6 +886,71 @@ fun LibraryScreen(
                                                 AeroColors.Accent
                                         )
                                     }
+
+                                    val isFavorite =
+                                        favoritePaths.contains(
+                                            track.path
+                                        )
+
+                                    IconButton(
+                                        onClick = {
+                                            onToggleFavorite(track)
+                                        },
+
+                                        modifier =
+                                            Modifier.size(36.dp)
+                                    ) {
+
+                                        Icon(
+                                            imageVector =
+                                                if (isFavorite) {
+                                                    Icons.Default.Favorite
+                                                } else {
+                                                    Icons.Default.FavoriteBorder
+                                                },
+
+                                            contentDescription =
+                                                if (isFavorite) {
+                                                    "Quitar de favoritos"
+                                                } else {
+                                                    "Agregar a favoritos"
+                                                },
+
+                                            tint =
+                                                if (isFavorite) {
+                                                    AeroColors.Accent
+                                                } else {
+                                                    AeroColors.TextTertiary
+                                                },
+
+                                            modifier =
+                                                Modifier.size(18.dp)
+                                        )
+                                    }
+
+                                    IconButton(
+                                        onClick = {
+                                            onAddToPlaylist(track)
+                                        },
+
+                                        modifier =
+                                            Modifier.size(36.dp)
+                                    ) {
+
+                                        Icon(
+                                            imageVector =
+                                                Icons.Default.PlaylistAdd,
+
+                                            contentDescription =
+                                                "Agregar a playlist",
+
+                                            tint =
+                                                AeroColors.TextTertiary,
+
+                                            modifier =
+                                                Modifier.size(18.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -979,13 +1029,13 @@ fun LibraryScreen(
                             )
                         )
                         .background(
-                            Color.White.copy(
+                            AeroColors.GlassSurfaceBase.copy(
                                 alpha = 0.42f
                             )
                         )
                         .border(
                             1.dp,
-                            Color.White.copy(
+                            AeroColors.GlassSurfaceBase.copy(
                                 alpha = 0.65f
                             ),
                             RoundedCornerShape(
@@ -1067,6 +1117,55 @@ fun LibraryScreen(
 }
 
 @Composable
+private fun SortOrderSelector(
+    sortOrder: SortOrder,
+    onSortOrderChange: (SortOrder) -> Unit
+) {
+
+    var expanded by remember {
+        mutableStateOf(false)
+    }
+
+    Box {
+
+        Text(
+            text = "Sort: " + sortOrderLabel(sortOrder),
+
+            color = AeroColors.Accent,
+
+            fontSize = 12.sp,
+
+            modifier =
+                Modifier.clickable {
+                    expanded = true
+                }
+        )
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+
+            SortOrder.entries.forEach { option ->
+
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = sortOrderLabel(option)
+                        )
+                    },
+
+                    onClick = {
+                        onSortOrderChange(option)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun AlbumRow(
     album: Album,
     onClick: () -> Unit
@@ -1083,7 +1182,7 @@ private fun AlbumRow(
                     RoundedCornerShape(16.dp)
                 )
                 .background(
-                    Color.White.copy(alpha = 0.38f)
+                    AeroColors.GlassSurfaceBase.copy(alpha = 0.38f)
                 )
                 .clickable {
                     onClick()
@@ -1154,7 +1253,7 @@ private fun ArtistRow(
                     RoundedCornerShape(16.dp)
                 )
                 .background(
-                    Color.White.copy(alpha = 0.38f)
+                    AeroColors.GlassSurfaceBase.copy(alpha = 0.38f)
                 )
                 .clickable {
                     onClick()

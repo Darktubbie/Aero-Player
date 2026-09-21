@@ -1,16 +1,13 @@
 package com.darktubbie.aeroplayer.ui.effects
 
 /**
- * Niveles de intensidad para las animaciones ambientales de fondo
- * (Fase 5 del plan de evolución visual).
+ * Niveles de intensidad para las animaciones ambientales de fondo.
  *
- * Todavía no existe una pantalla de Ajustes real donde el usuario
- * pueda elegir uno de estos valores (eso vive en la sección "Más",
- * marcada como "Próximamente" desde la Fase 1) — por ahora
- * [MidgroundLayer] usa [NORMAL] como valor por defecto, pero ya
- * queda preparado el parámetro para que una futura fase de Ajustes
- * solo tenga que pasar el valor elegido, sin tocar la lógica de
- * animación.
+ * Elegible desde Ajustes (Fase 5, 0.4.x) — ver
+ * [com.darktubbie.aeroplayer.ui.more.SettingsScreen] y
+ * [com.darktubbie.aeroplayer.ui.effects.LocalAmbientIntensity], que
+ * es cómo el valor elegido llega hasta [MidgroundLayer] sin pasar
+ * por parámetro en cada pantalla.
  *
  * [OFF] y [STATIC] son equivalentes en este momento (ninguno anima
  * nada): se mantienen como dos valores separados porque así los

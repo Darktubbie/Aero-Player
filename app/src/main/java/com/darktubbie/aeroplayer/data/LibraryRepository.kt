@@ -78,6 +78,11 @@ class LibraryRepository(
                             "albumArtPath",
                             track.albumArtPath ?: ""
                         )
+
+                        put(
+                            "dateModifiedMs",
+                            track.dateModifiedMs
+                        )
                     }
 
                 jsonArray.put(json)
@@ -159,7 +164,15 @@ class LibraryRepository(
                             )
                                 .takeIf {
                                     it.isNotBlank()
-                                }
+                                },
+
+                        // ausente en bibliotecas guardadas antes
+                        // de la Fase 1 (0.4.x) -> 0L por defecto.
+                        dateModifiedMs =
+                            json.optLong(
+                                "dateModifiedMs",
+                                0L
+                            )
                     )
                 )
             }
@@ -170,6 +183,36 @@ class LibraryRepository(
 
             emptyList()
         }
+    }
+
+    /*
+     * ---------------------------------------------------------
+     * PREFERENCIA DE ORDENAMIENTO (Fase 1, 0.4.x)
+     * ---------------------------------------------------------
+     */
+
+    /**
+     * Guarda el nombre del enum [com.darktubbie.aeroplayer.ui.library.SortOrder]
+     * elegido, para recordarlo entre reinicios de la app.
+     */
+    fun saveSortOrderName(name: String) {
+
+        preferences.edit()
+            .putString("sort_order", name)
+            .apply()
+    }
+
+    /**
+     * Devuelve el nombre guardado del orden preferido, o null si
+     * nunca se guardó ninguno (primera vez / instalación previa a
+     * esta fase).
+     */
+    fun loadSortOrderName(): String? {
+
+        return preferences.getString(
+            "sort_order",
+            null
+        )
     }
 
     /*
@@ -212,7 +255,12 @@ class LibraryRepository(
 
                 MediaStore.Audio.Media.DURATION,
 
-                MediaStore.Audio.Media.DATA
+                MediaStore.Audio.Media.DATA,
+
+                // Fase 1 (0.4.x): base para el orden "Más
+                // recientes primero". MediaStore la guarda en
+                // segundos, no en milisegundos.
+                MediaStore.Audio.Media.DATE_MODIFIED
             )
 
         val selection =
@@ -260,6 +308,11 @@ class LibraryRepository(
             val pathIndex =
                 cursor.getColumnIndexOrThrow(
                     MediaStore.Audio.Media.DATA
+                )
+
+            val dateModifiedIndex =
+                cursor.getColumnIndexOrThrow(
+                    MediaStore.Audio.Media.DATE_MODIFIED
                 )
 
             while (cursor.moveToNext()) {
@@ -327,6 +380,14 @@ class LibraryRepository(
                         durationIndex
                     )
 
+                // DATE_MODIFIED viene en segundos desde epoch;
+                // se normaliza a milisegundos para que sea
+                // comparable con el resto de timestamps de la app.
+                val dateModifiedMs =
+                    cursor.getLong(
+                        dateModifiedIndex
+                    ) * 1000L
+
                 result.add(
                     AudioTrack(
 
@@ -354,7 +415,10 @@ class LibraryRepository(
                          * AlbumArtCache se encarga de todo.
                          */
                         albumArtPath =
-                            null
+                            null,
+
+                        dateModifiedMs =
+                            dateModifiedMs
                     )
                 )
             }

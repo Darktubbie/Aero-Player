@@ -9,21 +9,29 @@ import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Resuelve y parsea el archivo `.ape` de una canción (Fase 7 del
- * plan de evolución visual: Aero Player Effects).
+ * Resuelve y parsea el archivo de efectos de una canción (Fase 7
+ * del plan de evolución visual: Aero Player Effects — "APE" es el
+ * nombre del sistema, no de la extensión de archivo).
  *
  * Reglas del formato, tal como las pidió el brief original:
  *
- * - Un `.ape` afecta únicamente a la canción con el mismo nombre
- *   base ("My Song.mp3" + "My Song.ape"), sin importar la extensión
- *   de audio.
+ * - Un archivo de efectos afecta únicamente a la canción con el
+ *   mismo nombre base ("My Song.mp3" + "My Song.aero"), sin importar
+ *   la extensión de audio.
  * - Mayúsculas/minúsculas se tratan de forma segura (comparación
  *   insensible a mayúsculas tanto del nombre base como de la
- *   extensión ".ape").
- * - Canciones sin `.ape` usan los efectos ambientales
+ *   extensión).
+ * - Canciones sin archivo de efectos usan los efectos ambientales
  *   predeterminados (el generador aleatorio ya existente en
  *   [com.darktubbie.aeroplayer.ui.effects.ForegroundLayer]).
  * - El tiempo de cada evento se guarda en milisegundos.
+ *
+ * Extensión ".aero" (reemplaza a ".ape"): se prioriza siempre que
+ * exista, y si no, se cae a un ".ape" existente para no romper
+ * canciones que ya tenían efectos guardados de antes de este
+ * cambio — [com.darktubbie.aeroplayer.ape.ApeWriter] es quien migra
+ * ese ".ape" a ".aero" la próxima vez que se edite y guarde esa
+ * canción. El formato JSON interno no cambió, solo la extensión.
  *
  * MUY IMPORTANTE (regla del brief, no negociable): APE nunca
  * controla Media3. Este repositorio no tiene ninguna referencia al
@@ -39,10 +47,23 @@ import java.util.concurrent.ConcurrentHashMap
  * (letras sincronizadas, secciones de canción, beats detectados por
  * análisis de audio) simplemente necesitaría producir la misma
  * lista de [ApeEvent] por otro medio; [ForegroundLayer] ya consume
- * "una lista de eventos con tiempo en ms", no "un archivo .ape"
+ * "una lista de eventos con tiempo en ms", no "un archivo .aero"
  * directamente.
  */
 object ApeRepository {
+
+    /**
+     * Extensión vigente del formato. Ver [LEGACY_EXTENSION] para la
+     * extensión anterior, todavía soportada solo en lectura.
+     */
+    const val CURRENT_EXTENSION = "aero"
+
+    /**
+     * Extensión usada antes de este cambio de formato — sigue
+     * reconociéndose al leer (compatibilidad hacia atrás), pero
+     * nunca se crea un archivo nuevo con esta extensión.
+     */
+    const val LEGACY_EXTENSION = "ape"
 
     /**
      * Cache en RAM por ruta de audio. `null` como valor significa
@@ -99,6 +120,41 @@ object ApeRepository {
         cache.remove(audioPath)
     }
 
+    /**
+     * Busca el archivo de efectos de [audioPath] entre los
+     * candidatos ya listados de su carpeta: primero con la
+     * extensión vigente ([CURRENT_EXTENSION]), y si no aparece, con
+     * la extensión anterior ([LEGACY_EXTENSION]) para no dejar de
+     * reconocer efectos guardados antes de este cambio de formato.
+     *
+     * Compartida entre lectura ([resolveAndParse]) y escritura
+     * ([com.darktubbie.aeroplayer.ape.ApeWriter]), para que ambas
+     * apliquen exactamente el mismo criterio de "cuál es el archivo
+     * de esta canción".
+     */
+    fun findEffectsCandidate(
+        files: List<File>,
+        baseName: String
+    ): File? {
+
+        fun matching(extension: String) =
+            files.firstOrNull { candidate ->
+
+                candidate.isFile &&
+                candidate.extension.equals(
+                    extension,
+                    ignoreCase = true
+                ) &&
+                candidate.nameWithoutExtension.equals(
+                    baseName,
+                    ignoreCase = true
+                )
+            }
+
+        return matching(CURRENT_EXTENSION)
+            ?: matching(LEGACY_EXTENSION)
+    }
+
     private fun resolveAndParse(
         audioPath: String
     ): ApeFile? {
@@ -114,23 +170,14 @@ object ApeRepository {
             val baseName =
                 audioFile.nameWithoutExtension
 
-            val apeFile =
-                parent.listFiles { candidate ->
-
-                    candidate.isFile &&
-                    candidate.extension.equals(
-                        "ape",
-                        ignoreCase = true
-                    ) &&
-                    candidate.nameWithoutExtension.equals(
-                        baseName,
-                        ignoreCase = true
-                    )
-                }?.firstOrNull()
-                    ?: return null
+            val effectsFile =
+                findEffectsCandidate(
+                    parent.listFiles()?.toList() ?: emptyList(),
+                    baseName
+                ) ?: return null
 
             parseJson(
-                apeFile.readText(Charsets.UTF_8)
+                effectsFile.readText(Charsets.UTF_8)
             )
 
         } catch (_: Exception) {

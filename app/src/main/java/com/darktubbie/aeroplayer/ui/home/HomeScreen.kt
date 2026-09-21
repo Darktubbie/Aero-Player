@@ -65,11 +65,11 @@ fun HomeScreen() {
                             RoundedCornerShape(28.dp)
                         )
                         .background(
-                            Color.White.copy(alpha = 0.38f)
+                            AeroColors.GlassSurfaceBase.copy(alpha = 0.38f)
                         )
                         .border(
                             1.dp,
-                            Color.White.copy(alpha = 0.7f),
+                            AeroColors.GlassSurfaceBase.copy(alpha = 0.7f),
                             RoundedCornerShape(28.dp)
                         )
                         .padding(24.dp),

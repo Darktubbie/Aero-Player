@@ -21,19 +21,31 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.darktubbie.aeroplayer.data.AudioTrack
 import com.darktubbie.aeroplayer.ui.ape.ApeEditorScreen
+import com.darktubbie.aeroplayer.ui.components.AddToPlaylistSheet
 import com.darktubbie.aeroplayer.ui.components.MiniPlayer
 import com.darktubbie.aeroplayer.ui.effects.AmbientPlaybackInfo
+import com.darktubbie.aeroplayer.ui.effects.LocalAmbientIntensity
 import com.darktubbie.aeroplayer.ui.effects.LocalAmbientPlayback
+import com.darktubbie.aeroplayer.ui.theme.LocalAeroColorScheme
+import com.darktubbie.aeroplayer.ui.theme.colorScheme
 import com.darktubbie.aeroplayer.ui.home.HomeScreen
 import com.darktubbie.aeroplayer.ui.library.LibraryScreen
 import com.darktubbie.aeroplayer.ui.library.LibraryTab
+import com.darktubbie.aeroplayer.ui.more.AddTracksToPlaylistScreen
+import com.darktubbie.aeroplayer.ui.more.FavoritesScreen
 import com.darktubbie.aeroplayer.ui.more.FoldersScreen
+import com.darktubbie.aeroplayer.ui.more.HistoryScreen
 import com.darktubbie.aeroplayer.ui.more.MoreScreen
+import com.darktubbie.aeroplayer.ui.more.PlaylistDetailScreen
+import com.darktubbie.aeroplayer.ui.more.PlaylistsScreen
+import com.darktubbie.aeroplayer.ui.more.SettingsScreen
 import com.darktubbie.aeroplayer.ui.navigation.AppDestination
 import com.darktubbie.aeroplayer.ui.navigation.BottomNavBar
 import com.darktubbie.aeroplayer.ui.nowplaying.EmptyNowPlayingPlaceholder
 import com.darktubbie.aeroplayer.ui.nowplaying.NowPlayingScreen
+import com.darktubbie.aeroplayer.ui.nowplaying.SleepTimerSheet
 
 /*
  * AudioTrack, FolderRepository y LibraryRepository viven en el
@@ -92,16 +104,41 @@ class MainActivity : ComponentActivity() {
                 Manifest.permission.READ_EXTERNAL_STORAGE
             }
 
+        /*
+         * Fase 5 (0.4.x): POST_NOTIFICATIONS también es un permiso
+         * runtime desde API 33 (antes, cualquier app podía mostrar
+         * notificaciones sin pedir nada). Sin este permiso, la
+         * notificación de reproducción que Media3 genera solo a
+         * partir de la MediaSession (ver PlaybackService) queda
+         * creada pero el sistema no la muestra — los controles de
+         * notificación parecían "no funcionar" en Android 13+
+         * cuando en realidad nunca se había pedido el permiso.
+         * Pendiente detectado en la auditoría de la Fase 0.
+         */
+        val missingPermissions =
+            mutableListOf(audioPermission)
+
         if (
-            checkSelfPermission(
-                audioPermission
-            ) != PackageManager.PERMISSION_GRANTED
+            Build.VERSION.SDK_INT >=
+            Build.VERSION_CODES.TIRAMISU
         ) {
 
+            missingPermissions.add(
+                Manifest.permission.POST_NOTIFICATIONS
+            )
+        }
+
+        val permissionsToRequest =
+            missingPermissions.filter {
+
+                checkSelfPermission(it) !=
+                    PackageManager.PERMISSION_GRANTED
+            }
+
+        if (permissionsToRequest.isNotEmpty()) {
+
             requestPermissions(
-                arrayOf(
-                    audioPermission
-                ),
+                permissionsToRequest.toTypedArray(),
                 100
             )
         }
@@ -127,6 +164,38 @@ class MainActivity : ComponentActivity() {
             }
 
             var foldersScreenOpen by remember {
+                mutableStateOf(false)
+            }
+
+            var sleepTimerSheetOpen by remember {
+                mutableStateOf(false)
+            }
+
+            var settingsScreenOpen by remember {
+                mutableStateOf(false)
+            }
+
+            var favoritesScreenOpen by remember {
+                mutableStateOf(false)
+            }
+
+            var playlistsScreenOpen by remember {
+                mutableStateOf(false)
+            }
+
+            var openPlaylistId by remember {
+                mutableStateOf<String?>(null)
+            }
+
+            var addTracksToPlaylistOpen by remember {
+                mutableStateOf(false)
+            }
+
+            var addToPlaylistTrack by remember {
+                mutableStateOf<AudioTrack?>(null)
+            }
+
+            var historyScreenOpen by remember {
                 mutableStateOf(false)
             }
 
@@ -188,6 +257,27 @@ class MainActivity : ComponentActivity() {
             val artistFilter by
                 viewModel.artistFilter
 
+            val sleepTimerState by
+                viewModel.sleepTimerState
+
+            val favoritePaths by
+                viewModel.favoritePaths
+
+            val favoriteTracks by
+                viewModel.favoriteTracks
+
+            val playlists by
+                viewModel.playlists
+
+            val historyTracks by
+                viewModel.historyTracks
+
+            val ambientIntensity by
+                viewModel.ambientIntensity
+
+            val appTheme by
+                viewModel.appTheme
+
             /*
              * LibraryScreen es una sola función que ya sabe
              * mostrar Songs/Albums/Artists según libraryTab (sus
@@ -214,6 +304,7 @@ class MainActivity : ComponentActivity() {
                     searchQuery = searchQuery,
                     sortOrder = sortOrder,
                     artistFilter = artistFilter,
+                    favoritePaths = favoritePaths,
 
                     onAddFolder = {
                         folderPicker.launch(null)
@@ -253,6 +344,14 @@ class MainActivity : ComponentActivity() {
 
                     onClearArtistFilter = {
                         viewModel.clearArtistFilter()
+                    },
+
+                    onToggleFavorite = { track ->
+                        viewModel.toggleFavorite(track)
+                    },
+
+                    onAddToPlaylist = { track ->
+                        addToPlaylistTrack = track
                     }
                 )
             }
@@ -275,7 +374,11 @@ class MainActivity : ComponentActivity() {
                         getPositionMs = {
                             viewModel.currentPositionMs()
                         }
-                    )
+                    ),
+
+                LocalAmbientIntensity provides ambientIntensity,
+
+                LocalAeroColorScheme provides appTheme.colorScheme()
             ) {
 
             Box(
@@ -332,6 +435,10 @@ class MainActivity : ComponentActivity() {
                                     durationMs = durationMs,
                                     shuffleEnabled = shuffleEnabled,
                                     repeatMode = repeatMode,
+                                    isFavorite =
+                                        favoritePaths.contains(
+                                            currentTrack.path
+                                        ),
 
                                     onBack = {
                                         destination =
@@ -368,6 +475,22 @@ class MainActivity : ComponentActivity() {
 
                                     onOpenApeEditor = {
                                         apeEditorOpen = true
+                                    },
+
+                                    onToggleFavorite = {
+                                        viewModel.toggleFavorite(
+                                            currentTrack
+                                        )
+                                    },
+
+                                    onAddToPlaylist = {
+                                        addToPlaylistTrack = currentTrack
+                                    },
+
+                                    sleepTimerState = sleepTimerState,
+
+                                    onOpenSleepTimer = {
+                                        sleepTimerSheetOpen = true
                                     }
                                 )
 
@@ -382,6 +505,22 @@ class MainActivity : ComponentActivity() {
                             MoreScreen(
                                 onOpenFolders = {
                                     foldersScreenOpen = true
+                                },
+
+                                onOpenSettings = {
+                                    settingsScreenOpen = true
+                                },
+
+                                onOpenFavorites = {
+                                    favoritesScreenOpen = true
+                                },
+
+                                onOpenPlaylists = {
+                                    playlistsScreenOpen = true
+                                },
+
+                                onOpenHistory = {
+                                    historyScreenOpen = true
                                 }
                             )
                         }
@@ -494,6 +633,276 @@ class MainActivity : ComponentActivity() {
 
                     onBack = {
                         foldersScreenOpen = false
+                    }
+                )
+            }
+
+            if (sleepTimerSheetOpen) {
+
+                SleepTimerSheet(
+                    state = sleepTimerState,
+
+                    onSelectMinutes = { minutes ->
+                        viewModel.startSleepTimerByMinutes(minutes)
+                        sleepTimerSheetOpen = false
+                    },
+
+                    onSelectSongs = { count ->
+                        viewModel.startSleepTimerBySongs(count)
+                        sleepTimerSheetOpen = false
+                    },
+
+                    onCancel = {
+                        viewModel.cancelSleepTimer()
+                        sleepTimerSheetOpen = false
+                    },
+
+                    onDismiss = {
+                        sleepTimerSheetOpen = false
+                    }
+                )
+            }
+
+            if (settingsScreenOpen) {
+
+                SettingsScreen(
+                    sortOrder = sortOrder,
+
+                    onSortOrderChange = { order ->
+                        viewModel.onSortOrderChange(order)
+                    },
+
+                    ambientIntensity = ambientIntensity,
+
+                    onAmbientIntensityChange = { intensity ->
+                        viewModel.setAmbientIntensity(intensity)
+                    },
+
+                    appTheme = appTheme,
+
+                    onAppThemeChange = { theme ->
+                        viewModel.setAppTheme(theme)
+                    },
+
+                    onOpenFolders = {
+                        settingsScreenOpen = false
+                        foldersScreenOpen = true
+                    },
+
+                    onBack = {
+                        settingsScreenOpen = false
+                    }
+                )
+            }
+
+            if (favoritesScreenOpen) {
+
+                FavoritesScreen(
+                    tracks = favoriteTracks,
+                    currentTrackUri = currentTrackUri,
+                    isPlaying = isPlaying,
+
+                    onTrackClick = { track ->
+
+                        if (track.uri == currentTrackUri) {
+                            viewModel.togglePlayPause()
+                        } else {
+                            viewModel.playFavorites(track)
+                        }
+                    },
+
+                    onPlayAll = {
+                        viewModel.playFavorites()
+                    },
+
+                    onToggleFavorite = { track ->
+                        viewModel.toggleFavorite(track)
+                    },
+
+                    onBack = {
+                        favoritesScreenOpen = false
+                    }
+                )
+            }
+
+            if (playlistsScreenOpen) {
+
+                val openPlaylist =
+                    openPlaylistId?.let { id ->
+                        playlists.find { it.id == id }
+                    }
+
+                when {
+
+                    openPlaylist != null &&
+                        addTracksToPlaylistOpen -> {
+
+                        AddTracksToPlaylistScreen(
+                            playlistName = openPlaylist.name,
+                            allTracks = tracks,
+
+                            isTrackInPlaylist = { track ->
+                                viewModel.playlistContainsTrack(
+                                    openPlaylist,
+                                    track
+                                )
+                            },
+
+                            onToggleTrack = { track ->
+                                viewModel.togglePlaylistTrack(
+                                    openPlaylist,
+                                    track
+                                )
+                            },
+
+                            onBack = {
+                                addTracksToPlaylistOpen = false
+                            }
+                        )
+                    }
+
+                    openPlaylist != null -> {
+
+                        PlaylistDetailScreen(
+                            playlist = openPlaylist,
+
+                            tracks =
+                                viewModel.tracksInPlaylist(
+                                    openPlaylist
+                                ),
+
+                            currentTrackUri = currentTrackUri,
+                            isPlaying = isPlaying,
+
+                            onTrackClick = { track ->
+                                viewModel.playPlaylist(
+                                    openPlaylist,
+                                    track
+                                )
+                            },
+
+                            onPlayAll = {
+                                viewModel.playPlaylist(openPlaylist)
+                            },
+
+                            onMoveTrack = { track, delta ->
+                                viewModel.movePlaylistTrack(
+                                    openPlaylist,
+                                    track,
+                                    delta
+                                )
+                            },
+
+                            onRemoveTrack = { track ->
+                                viewModel.removeTrackFromPlaylist(
+                                    openPlaylist,
+                                    track
+                                )
+                            },
+
+                            onRename = { newName ->
+                                viewModel.renamePlaylist(
+                                    openPlaylist,
+                                    newName
+                                )
+                            },
+
+                            onDeletePlaylist = {
+                                viewModel.deletePlaylist(openPlaylist)
+                                openPlaylistId = null
+                            },
+
+                            onOpenAddTracks = {
+                                addTracksToPlaylistOpen = true
+                            },
+
+                            onBack = {
+                                openPlaylistId = null
+                            }
+                        )
+                    }
+
+                    else -> {
+
+                        PlaylistsScreen(
+                            playlists = playlists,
+
+                            trackCountFor = { playlist ->
+                                viewModel.tracksInPlaylist(
+                                    playlist
+                                ).size
+                            },
+
+                            onCreatePlaylist = { name ->
+                                viewModel.createPlaylist(name)
+                            },
+
+                            onOpenPlaylist = { playlist ->
+                                openPlaylistId = playlist.id
+                            },
+
+                            onDeletePlaylist = { playlist ->
+                                viewModel.deletePlaylist(playlist)
+                            },
+
+                            onBack = {
+                                playlistsScreenOpen = false
+                                openPlaylistId = null
+                                addTracksToPlaylistOpen = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            addToPlaylistTrack?.let { track ->
+
+                AddToPlaylistSheet(
+                    track = track,
+                    playlists = playlists,
+
+                    isTrackInPlaylist = { playlist ->
+                        viewModel.playlistContainsTrack(
+                            playlist,
+                            track
+                        )
+                    },
+
+                    onTogglePlaylist = { playlist ->
+                        viewModel.togglePlaylistTrack(
+                            playlist,
+                            track
+                        )
+                    },
+
+                    onCreatePlaylistWithTrack = { name ->
+                        viewModel.createPlaylistWithTrack(
+                            name,
+                            track
+                        )
+                    },
+
+                    onDismiss = {
+                        addToPlaylistTrack = null
+                    }
+                )
+            }
+
+            if (historyScreenOpen) {
+
+                HistoryScreen(
+                    entries = historyTracks,
+
+                    onTrackClick = { track ->
+                        viewModel.playFromHistory(track)
+                    },
+
+                    onClearHistory = {
+                        viewModel.clearHistory()
+                    },
+
+                    onBack = {
+                        historyScreenOpen = false
                     }
                 )
             }

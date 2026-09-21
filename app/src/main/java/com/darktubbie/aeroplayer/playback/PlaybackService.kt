@@ -1,9 +1,15 @@
 package com.darktubbie.aeroplayer.playback
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.media.AudioManager
+import android.os.Build
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
+import com.darktubbie.aeroplayer.data.SettingsRepository
 
 /**
  * Servicio Media3 que aloja el [ExoPlayer] real y la [MediaSession]
@@ -27,8 +33,48 @@ class PlaybackService : MediaSessionService() {
 
     private var mediaSession: MediaSession? = null
 
+    private lateinit var settingsRepository: SettingsRepository
+
+    /*
+     * Fase 1 (0.4.x): pausar automáticamente al perder la salida de
+     * audio actual (p. ej. se desconectan los audífonos/altavoz
+     * Bluetooth mientras suena música).
+     *
+     * Se usa ACTION_AUDIO_BECOMING_NOISY en vez de un sistema propio
+     * de detección de Bluetooth: es el mecanismo oficial de Android
+     * para exactamente este escenario (cualquier salida de audio
+     * "privada" que se pierde y haría que el sonido saltara al
+     * altavoz del teléfono sin avisar), cubre tanto Bluetooth como
+     * audífonos con cable, y no depende de sondear el estado de
+     * Bluetooth por nuestra cuenta.
+     */
+    private val becomingNoisyReceiver =
+        object : BroadcastReceiver() {
+
+            override fun onReceive(
+                context: Context?,
+                intent: Intent?
+            ) {
+
+                if (
+                    intent?.action ==
+                    AudioManager.ACTION_AUDIO_BECOMING_NOISY &&
+                    settingsRepository
+                        .isPauseOnBluetoothDisconnectEnabled()
+                ) {
+
+                    mediaSession
+                        ?.player
+                        ?.pause()
+                }
+            }
+        }
+
     override fun onCreate() {
         super.onCreate()
+
+        settingsRepository =
+            SettingsRepository(this)
 
         val player =
             ExoPlayer.Builder(this)
@@ -39,6 +85,31 @@ class PlaybackService : MediaSessionService() {
                 this,
                 player
             ).build()
+
+        val filter =
+            IntentFilter(
+                AudioManager.ACTION_AUDIO_BECOMING_NOISY
+            )
+
+        if (
+            Build.VERSION.SDK_INT >=
+            Build.VERSION_CODES.TIRAMISU
+        ) {
+
+            registerReceiver(
+                becomingNoisyReceiver,
+                filter,
+                Context.RECEIVER_NOT_EXPORTED
+            )
+
+        } else {
+
+            @Suppress("UnspecifiedRegisterReceiverFlag")
+            registerReceiver(
+                becomingNoisyReceiver,
+                filter
+            )
+        }
     }
 
     override fun onGetSession(
@@ -77,6 +148,18 @@ class PlaybackService : MediaSessionService() {
     }
 
     override fun onDestroy() {
+
+        try {
+
+            unregisterReceiver(
+                becomingNoisyReceiver
+            )
+
+        } catch (_: IllegalArgumentException) {
+
+            // Ya estaba sin registrar (p. ej. onCreate nunca
+            // llegó a completarse) — no hay nada que deshacer.
+        }
 
         mediaSession?.run {
 

@@ -58,13 +58,13 @@ fun MiniPlayer(
                     RoundedCornerShape(20.dp)
                 )
                 .background(
-                    Color.White.copy(
+                    AeroColors.GlassSurfaceBase.copy(
                         alpha = 0.48f
                     )
                 )
                 .border(
                     1.dp,
-                    Color.White.copy(
+                    AeroColors.GlassSurfaceBase.copy(
                         alpha = 0.72f
                     ),
                     RoundedCornerShape(20.dp)

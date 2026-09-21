@@ -53,7 +53,7 @@ import kotlin.math.sin
 @Composable
 fun MidgroundLayer(
     modifier: Modifier = Modifier,
-    intensity: AmbientIntensity = AmbientIntensity.NORMAL
+    intensity: AmbientIntensity = LocalAmbientIntensity.current
 ) {
 
     val context = LocalContext.current

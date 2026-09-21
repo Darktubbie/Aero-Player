@@ -399,7 +399,7 @@ fun ApeEditorScreen(
 
             GlassButton(
                 text =
-                    if (saving) "Guardando…" else "Guardar .ape",
+                    if (saving) "Guardando…" else "Guardar .aero",
 
                 enabled = !saving,
 
@@ -479,10 +479,10 @@ private fun GlassCard(
             Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
-                .background(Color.White.copy(alpha = 0.34f))
+                .background(AeroColors.GlassSurfaceBase.copy(alpha = 0.34f))
                 .border(
                     1.dp,
-                    Color.White.copy(alpha = 0.6f),
+                    AeroColors.GlassSurfaceBase.copy(alpha = 0.6f),
                     RoundedCornerShape(20.dp)
                 )
                 .padding(16.dp),
@@ -507,7 +507,7 @@ private fun GlassButton(
                     if (enabled) {
                         AeroColors.Accent.copy(alpha = 0.85f)
                     } else {
-                        Color.White.copy(alpha = 0.25f)
+                        AeroColors.GlassSurfaceBase.copy(alpha = 0.25f)
                     }
                 )
                 .clickable(enabled = enabled) { onClick() }
@@ -643,7 +643,7 @@ private fun EffectOption(
                     if (selected) {
                         AeroColors.Accent.copy(alpha = 0.35f)
                     } else {
-                        Color.White.copy(alpha = 0.22f)
+                        AeroColors.GlassSurfaceBase.copy(alpha = 0.22f)
                     }
                 )
                 .border(
@@ -652,7 +652,7 @@ private fun EffectOption(
                     if (selected) {
                         AeroColors.Accent
                     } else {
-                        Color.White.copy(alpha = 0.4f)
+                        AeroColors.GlassSurfaceBase.copy(alpha = 0.4f)
                     },
 
                     RoundedCornerShape(14.dp)
@@ -683,7 +683,7 @@ private fun EventRow(
                 .fillMaxWidth()
                 .padding(bottom = 8.dp)
                 .clip(RoundedCornerShape(14.dp))
-                .background(Color.White.copy(alpha = 0.26f))
+                .background(AeroColors.GlassSurfaceBase.copy(alpha = 0.26f))
                 .padding(horizontal = 14.dp, vertical = 10.dp),
 
         verticalAlignment = Alignment.CenterVertically,

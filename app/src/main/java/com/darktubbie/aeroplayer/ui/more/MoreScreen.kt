@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
@@ -32,14 +32,23 @@ import com.darktubbie.aeroplayer.ui.theme.AeroColors
 /**
  * Sección "Más" (Fase 1 del plan de evolución visual).
  *
- * Artistas, Favoritos y Playlists siguen como filas inertes
- * "Próximamente" (fases futuras). Carpetas ya es funcional (antes
- * no había ninguna forma de quitar una carpeta agregada — ver
- * [FoldersScreen]).
+ * Ya no quedan filas "Próximamente": Favoritos, Playlists,
+ * Historial, Carpetas y Ajustes son funcionales (ver
+ * [FavoritesScreen], [PlaylistsScreen]/[PlaylistDetailScreen],
+ * [HistoryScreen], [FoldersScreen] y [SettingsScreen]).
+ *
+ * No hay fila "Artistas": Artists ya es una de las tres pestañas
+ * (Songs/Albums/Artists) dentro de la propia LibraryScreen,
+ * accesible desde Música o Álbumes — tener además una fila acá
+ * diciendo "Próximamente" era engañoso, la función ya existe.
  */
 @Composable
 fun MoreScreen(
-    onOpenFolders: () -> Unit
+    onOpenFolders: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onOpenFavorites: () -> Unit,
+    onOpenPlaylists: () -> Unit,
+    onOpenHistory: () -> Unit
 ) {
 
     AeroBackground {
@@ -58,15 +67,25 @@ fun MoreScreen(
             )
 
             Text(
-                text = "Próximamente en Aero Player",
+                text = "Herramientas y ajustes de Aero Player",
                 fontSize = 14.sp,
                 color = AeroColors.OnBackgroundSubtitle,
                 modifier = Modifier.padding(bottom = 18.dp)
             )
 
-            MoreRow(icon = Icons.Default.Person, title = "Artistas")
-            MoreRow(icon = Icons.Default.Star, title = "Favoritos")
-            MoreRow(icon = Icons.Default.PlaylistPlay, title = "Playlists")
+            MoreRow(
+                icon = Icons.Default.Star,
+                title = "Favoritos",
+                onClick = onOpenFavorites
+            )
+
+            MoreRow(icon = Icons.Default.PlaylistPlay, title = "Playlists", onClick = onOpenPlaylists)
+
+            MoreRow(
+                icon = Icons.Default.History,
+                title = "Historial",
+                onClick = onOpenHistory
+            )
 
             MoreRow(
                 icon = Icons.Default.Folder,
@@ -74,7 +93,11 @@ fun MoreScreen(
                 onClick = onOpenFolders
             )
 
-            MoreRow(icon = Icons.Default.Settings, title = "Ajustes")
+            MoreRow(
+                icon = Icons.Default.Settings,
+                title = "Ajustes",
+                onClick = onOpenSettings
+            )
         }
     }
 }
@@ -95,11 +118,11 @@ private fun MoreRow(
                     RoundedCornerShape(18.dp)
                 )
                 .background(
-                    Color.White.copy(alpha = 0.32f)
+                    AeroColors.GlassSurfaceBase.copy(alpha = 0.32f)
                 )
                 .border(
                     1.dp,
-                    Color.White.copy(alpha = 0.55f),
+                    AeroColors.GlassSurfaceBase.copy(alpha = 0.55f),
                     RoundedCornerShape(18.dp)
                 )
                 .let {

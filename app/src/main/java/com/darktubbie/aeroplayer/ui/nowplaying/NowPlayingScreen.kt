@@ -17,13 +17,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.RepeatOne
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
@@ -44,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.Player
 import com.darktubbie.aeroplayer.data.AudioTrack
+import com.darktubbie.aeroplayer.playback.SleepTimerState
 import com.darktubbie.aeroplayer.ui.components.AeroBackground
 import com.darktubbie.aeroplayer.ui.components.AlbumArt
 import com.darktubbie.aeroplayer.ui.theme.AeroColors
@@ -73,7 +78,12 @@ fun NowPlayingScreen(
     onToggleShuffle: () -> Unit,
     onCycleRepeat: () -> Unit,
     onTick: () -> Unit,
-    onOpenApeEditor: () -> Unit
+    onOpenApeEditor: () -> Unit,
+    isFavorite: Boolean,
+    onToggleFavorite: () -> Unit,
+    onAddToPlaylist: () -> Unit,
+    sleepTimerState: SleepTimerState,
+    onOpenSleepTimer: () -> Unit
 ) {
 
     /*
@@ -146,6 +156,69 @@ fun NowPlayingScreen(
                 )
 
                 IconButton(
+                    onClick = onToggleFavorite
+                ) {
+
+                    Icon(
+                        imageVector =
+                            if (isFavorite) {
+                                Icons.Default.Favorite
+                            } else {
+                                Icons.Default.FavoriteBorder
+                            },
+
+                        contentDescription =
+                            if (isFavorite) {
+                                "Quitar de favoritos"
+                            } else {
+                                "Agregar a favoritos"
+                            },
+
+                        tint =
+                            if (isFavorite) {
+                                AeroColors.Accent
+                            } else {
+                                Color.White
+                            }
+                    )
+                }
+
+                IconButton(
+                    onClick = onAddToPlaylist
+                ) {
+
+                    Icon(
+                        imageVector = Icons.Default.PlaylistAdd,
+                        contentDescription = "Agregar a playlist",
+                        tint = Color.White
+                    )
+                }
+
+                IconButton(
+                    onClick = onOpenSleepTimer
+                ) {
+
+                    Icon(
+                        imageVector =
+                            Icons.Default.Timer,
+
+                        contentDescription =
+                            if (sleepTimerState.isActive) {
+                                "Sleep Timer activo"
+                            } else {
+                                "Sleep Timer"
+                            },
+
+                        tint =
+                            if (sleepTimerState.isActive) {
+                                AeroColors.Accent
+                            } else {
+                                Color.White
+                            }
+                    )
+                }
+
+                IconButton(
                     onClick = onOpenApeEditor
                 ) {
 
@@ -154,7 +227,7 @@ fun NowPlayingScreen(
                             Icons.Default.Edit,
 
                         contentDescription =
-                            "Editar efectos (.ape)",
+                            "Editar efectos (.aero)",
 
                         tint = Color.White
                     )
@@ -272,7 +345,7 @@ fun NowPlayingScreen(
                             AeroColors.Accent,
 
                         inactiveTrackColor =
-                            Color.White.copy(
+                            AeroColors.GlassSurfaceBase.copy(
                                 alpha = 0.35f
                             )
                     )
@@ -370,13 +443,13 @@ fun NowPlayingScreen(
                             .size(64.dp)
                             .clip(CircleShape)
                             .background(
-                                Color.White.copy(
+                                AeroColors.GlassSurfaceBase.copy(
                                     alpha = 0.42f
                                 )
                             )
                             .border(
                                 1.dp,
-                                Color.White.copy(
+                                AeroColors.GlassSurfaceBase.copy(
                                     alpha = 0.7f
                                 ),
                                 CircleShape

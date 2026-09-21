@@ -73,6 +73,61 @@ class PlayerRepository(
     val repeatMode: State<Int>
         get() = _repeatMode
 
+    /**
+     * Se invoca cuando una pista termina de sonar por sí sola y el
+     * reproductor avanza a la siguiente (o se repite) de forma
+     * natural — nunca por un skip manual del usuario.
+     *
+     * Usado por el Sleep Timer "por número de canciones" (Fase 1,
+     * 0.4.x): contar transiciones de forma ingenua (cualquier
+     * cambio de `currentMediaItem`) contaría también los saltos
+     * manuales de siguiente/anterior, lo cual daría un conteo
+     * incorrecto. Ver el filtro por `reason` en [playerListener].
+     */
+    var onTrackAutoAdvanced: (() -> Unit)? = null
+
+    /**
+     * Se invoca cuando el reproductor deja atrás una pista para
+     * pasar a otra distinta — por completarse sola, por skip
+     * manual, o porque el usuario tocó otra canción — reportando
+     * cuánto se alcanzó a escuchar de ella ([playedMs]).
+     *
+     * Usado por el Historial (Fase 4, 0.4.x) para decidir si esa
+     * escucha cuenta como "canción reproducida" o fue solo un
+     * vistazo breve; quien escucha este callback decide el umbral,
+     * ver [com.darktubbie.aeroplayer.MainViewModel].
+     *
+     * Se basa en `onPositionDiscontinuity` en vez de en
+     * [onTrackAutoAdvanced] porque acá necesitamos la posición real
+     * dentro de la pista que se está dejando, y Media3 la entrega
+     * directa en el propio callback — a diferencia de [_positionMs],
+     * que solo se actualiza cuando algo llama a [refreshPosition]
+     * (típicamente Now Playing visible), y podría estar desactualizado
+     * si el usuario venía escuchando en segundo plano.
+     */
+    var onTrackLeftBehind: ((String, Long) -> Unit)? = null
+
+    /*
+     * Guarda anti-duplicado para onPositionDiscontinuity (ver el
+     * override más abajo). Con MediaController (a diferencia de un
+     * ExoPlayer local), Media3 puede entregar el mismo evento de
+     * discontinuidad dos veces para una sola transición real —es
+     * una particularidad conocida del mecanismo de sincronización
+     * de estado entre MediaSession y MediaController vía binder, no
+     * un bug en la lógica de acá. El síntoma visible era que cada
+     * canción quedaba duplicada en el Historial (Fase 4, 0.4.x).
+     *
+     * Como el evento duplicado reporta exactamente la misma pista y
+     * la misma posición que el original, y llega prácticamente en
+     * el mismo instante, alcanza con ignorar una repetición
+     * idéntica que llegue dentro de una ventana corta.
+     */
+    private var lastReportedLeftTrack: Pair<String, Long>? =
+        null
+
+    private var lastReportedLeftAtElapsedMs: Long =
+        0L
+
     private val playerListener =
         object : Player.Listener {
 
@@ -81,6 +136,63 @@ class PlayerRepository(
             ) {
 
                 _isPlaying.value = isPlaying
+            }
+
+            override fun onPositionDiscontinuity(
+                oldPosition: Player.PositionInfo,
+                newPosition: Player.PositionInfo,
+                reason: Int
+            ) {
+
+                val leftTrackUri =
+                    oldPosition.mediaItem?.mediaId
+                        ?: return
+
+                /*
+                 * Si el índice de pista no cambió, es un seek
+                 * dentro de la MISMA canción (arrastrar la barra
+                 * de progreso) — todavía no se "dejó atrás" nada,
+                 * así que no cuenta para el historial.
+                 *
+                 * Como efecto secundario, esto también excluye
+                 * cada vuelta de Repeat One de generar una entrada
+                 * de historial nueva (mismo índice repitiéndose):
+                 * decisión deliberada, no un descuido — de lo
+                 * contrario, dejar una canción en loop una hora
+                 * inundaría el historial con la misma canción
+                 * cientos de veces.
+                 */
+                if (
+                    oldPosition.mediaItemIndex ==
+                    newPosition.mediaItemIndex
+                ) {
+                    return
+                }
+
+                val playedMs =
+                    oldPosition.positionMs.coerceAtLeast(0L)
+
+                val key =
+                    leftTrackUri to playedMs
+
+                val now =
+                    android.os.SystemClock.elapsedRealtime()
+
+                if (
+                    key == lastReportedLeftTrack &&
+                    now - lastReportedLeftAtElapsedMs < 1_000L
+                ) {
+                    // Mismo evento entregado de nuevo — se ignora.
+                    return
+                }
+
+                lastReportedLeftTrack = key
+                lastReportedLeftAtElapsedMs = now
+
+                onTrackLeftBehind?.invoke(
+                    leftTrackUri,
+                    playedMs
+                )
             }
 
             override fun onMediaItemTransition(
@@ -97,6 +209,32 @@ class PlayerRepository(
                 // refreshPosition() mientras se ve
                 // Now Playing.
                 refreshPosition()
+
+                /*
+                 * MEDIA_ITEM_TRANSITION_REASON_AUTO: la pista
+                 * anterior terminó sola y Media3 avanzó a la
+                 * siguiente por su cuenta — esto es "una canción
+                 * reproducida" para el Sleep Timer por canciones.
+                 *
+                 * MEDIA_ITEM_TRANSITION_REASON_REPEAT: con Repeat
+                 * One la misma pista se reinicia sola al terminar
+                 * — también cuenta como una reproducción completa.
+                 *
+                 * Se excluye deliberadamente
+                 * MEDIA_ITEM_TRANSITION_REASON_SEEK (next/previous
+                 * manual del usuario) y
+                 * MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED
+                 * (el usuario cambió de cola tocando otra canción),
+                 * ninguno de los dos es "una canción que terminó de
+                 * sonar".
+                 */
+                if (
+                    reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO ||
+                    reason == Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT
+                ) {
+
+                    onTrackAutoAdvanced?.invoke()
+                }
             }
         }
 
@@ -165,6 +303,32 @@ class PlayerRepository(
                  * un estado incorrecto mientras tanto.
                  */
                 syncStateFromController()
+
+                /*
+                 * Fase 5 (0.4.x): solo se restaura shuffle/repeat
+                 * guardado si el controller está "vacío" (sin cola
+                 * cargada) — es decir, si PlaybackService acaba de
+                 * crear un ExoPlayer nuevo desde cero. Si en cambio
+                 * el servicio ya tenía una sesión viva con su
+                 * propia cola y su propio shuffle/repeat reales
+                 * (por ejemplo, la Activity se recreó pero el
+                 * servicio siguió vivo), ya se sincronizaron arriba
+                 * y no hay que pisarlos con un valor guardado que
+                 * podría estar desactualizado.
+                 */
+                pendingShuffleRestore?.let { (shuffle, repeat) ->
+
+                    if (controller?.mediaItemCount == 0) {
+
+                        controller?.shuffleModeEnabled = shuffle
+                        controller?.repeatMode = repeat
+
+                        _shuffleEnabled.value = shuffle
+                        _repeatMode.value = repeat
+                    }
+
+                    pendingShuffleRestore = null
+                }
             },
             MoreExecutors.directExecutor()
         )
@@ -193,6 +357,15 @@ class PlayerRepository(
     }
 
     private var queuedTrackUris: List<String>? = null
+
+    /**
+     * Shuffle/repeat guardados para restaurar cuando se conecta a
+     * una sesión recién creada (Fase 5, 0.4.x) — ver [connect].
+     * Quien llama debe asignarlo ANTES de llamar a [connect]; se
+     * consume una sola vez (se pone en null después de usarlo o
+     * descartarlo).
+     */
+    var pendingShuffleRestore: Pair<Boolean, Int>? = null
 
     /**
      * Reproduce [tracks] como cola, empezando en [startIndex].
@@ -293,6 +466,17 @@ class PlayerRepository(
 
             controller.play()
         }
+    }
+
+    /**
+     * Pausa explícitamente, a diferencia de [togglePlayPause] que
+     * alterna. La usa el Sleep Timer (Fase 1, 0.4.x): cuando el
+     * tiempo/canciones configuradas se agotan siempre debe pausar,
+     * nunca reanudar por accidente si en ese instante ya estaba en
+     * pausa.
+     */
+    fun pause() {
+        controller?.pause()
     }
 
     fun skipNext() {
@@ -418,6 +602,10 @@ class PlayerRepository(
         controller?.removeListener(
             playerListener
         )
+
+        onTrackAutoAdvanced = null
+
+        onTrackLeftBehind = null
 
         controllerFuture?.let {
             MediaController.releaseFuture(it)
