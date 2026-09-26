@@ -13,16 +13,22 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.darktubbie.aeroplayer.ui.theme.AeroColors
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
@@ -49,6 +55,22 @@ import kotlin.math.sin
  *   está pausada o no hay nada reproduciéndose.
  * - [AmbientIntensity.OFF] y [AmbientIntensity.STATIC] tampoco
  *   animan nada: las burbujas quedan exactamente como en la Fase 4.
+ *
+ * Fase 4 de Dynamic Aero (0.5.0): los colores de cuerpo/borde y de
+ * los degradados radiales ya no son fijos — salen de [AeroColors]
+ * ([AeroColors.AmbientBubbleTint], [AeroColors.AmbientGlowPrimary],
+ * [AeroColors.AmbientGlowSecondary]), así que Aero Dark tiñe las
+ * burbujas a celeste-hielo y cian/azul en vez de blanco. Los
+ * reflejos/highlights internos se mantienen en blanco puro a
+ * propósito en ambos temas (son un brillo especular, no el color
+ * del cuerpo de la burbuja).
+ *
+ * Fase 5 de la Experiencia de Artwork (0.5.0) — integración con
+ * artwork: los dos degradados radiales grandes se matizan (35%) con
+ * el color dominante de la portada de la canción actual (ver
+ * [AmbientArtworkColor]), independientemente del nivel de
+ * intensidad — es un color, no movimiento. Sin canción/sin artwork,
+ * quedan exactamente en el color fijo del tema.
  */
 @Composable
 fun MidgroundLayer(
@@ -63,8 +85,11 @@ fun MidgroundLayer(
             isSystemReduceMotionEnabled(context)
         }
 
+    val ambientPlayback =
+        LocalAmbientPlayback.current
+
     val isMusicPlaying =
-        LocalAmbientPlayback.current.isPlaying
+        ambientPlayback.isPlaying
 
     val effectiveIntensity =
         if (reduceMotion || !isMusicPlaying) {
@@ -121,6 +146,68 @@ fun MidgroundLayer(
         } else {
             null
         }
+
+    /*
+     * Integración de artwork con el fondo ambiental (Fase 5 de la
+     * Experiencia de Artwork, 0.5.0): color dominante de la portada
+     * de la canción actual, resuelto de forma perezosa cada vez que
+     * cambia de canción (no en cada frame). Sin canción/sin
+     * artwork, queda en null y los degradados usan el color fijo
+     * del tema, exactamente igual que antes de esta fase.
+     */
+    var artworkColor by
+        remember {
+            mutableStateOf<Color?>(null)
+        }
+
+    LaunchedEffect(
+        ambientPlayback.trackPath,
+        ambientPlayback.trackArtist,
+        ambientPlayback.trackAlbum
+    ) {
+
+        val path =
+            ambientPlayback.trackPath
+
+        artworkColor =
+            if (path.isNullOrBlank()) {
+                null
+            } else {
+                AmbientArtworkColor.get(
+                    context = context,
+                    path = path,
+                    artist = ambientPlayback.trackArtist,
+                    album = ambientPlayback.trackAlbum
+                )
+            }
+    }
+
+    /*
+     * Mezcla sutil (35%) sobre el color fijo del tema — la
+     * identidad Aero sigue siendo la base, el artwork solo la
+     * matiza. Se preserva el alpha original del degradado: el
+     * artwork nunca lo vuelve más opaco ni más transparente.
+     */
+    fun tintedGlow(
+        base: Color
+    ): Color {
+
+        val artwork =
+            artworkColor
+                ?: return base
+
+        return lerp(
+            base.copy(alpha = 1f),
+            artwork,
+            0.35f
+        ).copy(alpha = base.alpha)
+    }
+
+    val glowPrimary =
+        tintedGlow(AeroColors.AmbientGlowPrimary)
+
+    val glowSecondary =
+        tintedGlow(AeroColors.AmbientGlowSecondary)
 
     val density = LocalDensity.current
 
@@ -209,7 +296,7 @@ fun MidgroundLayer(
                         Brush.radialGradient(
                             colors =
                                 listOf(
-                                    Color(0x99B7FFEF),
+                                    glowPrimary,
                                     Color.Transparent
                                 )
                         )
@@ -234,7 +321,7 @@ fun MidgroundLayer(
                         Brush.radialGradient(
                             colors =
                                 listOf(
-                                    Color(0x7787E8FF),
+                                    glowSecondary,
                                     Color.Transparent
                                 )
                         )
@@ -256,13 +343,13 @@ fun MidgroundLayer(
                         CircleShape
                     )
                     .background(
-                        Color.White.copy(
+                        AeroColors.AmbientBubbleTint.copy(
                             alpha = 0.18f
                         )
                     )
                     .border(
                         2.dp,
-                        Color.White.copy(
+                        AeroColors.AmbientBubbleTint.copy(
                             alpha = 0.42f
                         ),
                         CircleShape
@@ -303,13 +390,13 @@ fun MidgroundLayer(
                         CircleShape
                     )
                     .background(
-                        Color.White.copy(
+                        AeroColors.AmbientBubbleTint.copy(
                             alpha = 0.22f
                         )
                     )
                     .border(
                         1.dp,
-                        Color.White.copy(
+                        AeroColors.AmbientBubbleTint.copy(
                             alpha = 0.45f
                         ),
                         CircleShape
@@ -331,13 +418,13 @@ fun MidgroundLayer(
                         CircleShape
                     )
                     .background(
-                        Color.White.copy(
+                        AeroColors.AmbientBubbleTint.copy(
                             alpha = 0.16f
                         )
                     )
                     .border(
                         2.dp,
-                        Color.White.copy(
+                        AeroColors.AmbientBubbleTint.copy(
                             alpha = 0.35f
                         ),
                         CircleShape

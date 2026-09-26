@@ -3,9 +3,23 @@
 
     <style name="Theme.AeroPlayer" parent="android:style/Theme.Material.Light.NoActionBar">
         <item name="android:fontFamily">sans</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:navigationBarColor">#FFFFFF</item>
-        <item name="android:statusBarColor">#FFFFFF</item>
+        <!--
+             Fase 7 (Aero Dark UI refinement, 0.5.0): antes acá había
+             android:windowLightStatusBar=true y
+             android:navigationBarColor/statusBarColor="#FFFFFF" fijos
+             — esa franja blanca fija en la barra de navegación era
+             la causa concreta de la "zona inferior blanca" cuando
+             Aero Dark estaba seleccionado, porque un valor estático
+             de XML no puede reaccionar al tema Aero Claro/Aero Dark
+             elegido en tiempo de ejecución (ese selector no tiene
+             nada que ver con el tema claro/oscuro del sistema
+             operativo). Ahora las barras son transparentes (dejan
+             ver el contenido de Compose real detrás) y
+             MainActivity.onCreate ajusta el color de sus íconos
+             (claro/oscuro) cada vez que cambia el tema elegido.
+        -->
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
 </resources>

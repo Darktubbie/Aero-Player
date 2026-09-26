@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -39,9 +40,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.darktubbie.aeroplayer.R
 import com.darktubbie.aeroplayer.data.Album
 import com.darktubbie.aeroplayer.data.Artist
 import com.darktubbie.aeroplayer.data.AudioTrack
@@ -112,10 +114,9 @@ fun LibraryScreen(
 
                     Text(
                         text =
-                            "Aero Player",
+                            stringResource(R.string.app_name),
 
-                        fontSize =
-                            30.sp,
+                        style = MaterialTheme.typography.headlineLarge,
 
                         color =
                             Color.White
@@ -123,10 +124,9 @@ fun LibraryScreen(
 
                     Text(
                         text =
-                            "Your music, your way.",
+                            stringResource(R.string.home_tagline),
 
-                        fontSize =
-                            14.sp,
+                        style = MaterialTheme.typography.bodyMedium,
 
                         color =
                             AeroColors.OnBackgroundSubtitle
@@ -166,7 +166,7 @@ fun LibraryScreen(
                                 Icons.Default.Settings,
 
                             contentDescription =
-                                "Settings",
+                                stringResource(R.string.settings_title),
 
                             tint =
                                 Color.White
@@ -224,10 +224,9 @@ fun LibraryScreen(
 
                             Text(
                                 text =
-                                    "Library",
+                                    stringResource(R.string.library_title),
 
-                                fontSize =
-                                    22.sp,
+                                style = MaterialTheme.typography.headlineMedium,
 
                                 color =
                                     AeroColors.TextPrimary
@@ -239,21 +238,24 @@ fun LibraryScreen(
                                         isScanning
                                     ) {
 
-                                        "Scanning music..."
+                                        stringResource(R.string.library_scanning_short)
 
                                     } else if (
                                         tracks.isEmpty()
                                     ) {
 
-                                        "No songs scanned yet"
+                                        stringResource(R.string.library_no_songs_scanned)
 
                                     } else {
 
-                                        "${tracks.size} songs found"
+                                        pluralStringResource(
+                                            R.plurals.library_songs_found,
+                                            tracks.size,
+                                            tracks.size
+                                        )
                                     },
 
-                                fontSize =
-                                    13.sp,
+                                style = MaterialTheme.typography.bodySmall,
 
                                 color =
                                     AeroColors.TextSecondary
@@ -274,7 +276,7 @@ fun LibraryScreen(
                                     Icons.Default.Refresh,
 
                                 contentDescription =
-                                    "Refresh library",
+                                    stringResource(R.string.cd_refresh_library),
 
                                 tint =
                                     AeroColors.Accent
@@ -326,24 +328,22 @@ fun LibraryScreen(
 
                             Text(
                                 text =
-                                    "Scanning your music...",
+                                    stringResource(R.string.library_scanning),
 
                                 color =
                                     AeroColors.TextPrimary,
 
-                                fontSize =
-                                    15.sp
+                                style = MaterialTheme.typography.bodyLarge,
                             )
 
                             Text(
                                 text =
-                                    "Please wait",
+                                    stringResource(R.string.library_please_wait),
 
                                 color =
                                     AeroColors.TextSecondary,
 
-                                fontSize =
-                                    12.sp
+                                style = MaterialTheme.typography.labelMedium,
                             )
                         }
 
@@ -395,18 +395,17 @@ fun LibraryScreen(
                                         selectedFolders.isEmpty()
                                     ) {
 
-                                        "Select a music folder first"
+                                        stringResource(R.string.library_select_folder_first)
 
                                     } else {
 
-                                        "Your music will appear here"
+                                        stringResource(R.string.library_music_will_appear)
                                     },
 
                                 color =
                                     AeroColors.TextPrimary,
 
-                                fontSize =
-                                    15.sp
+                                style = MaterialTheme.typography.bodyLarge,
                             )
 
                             Spacer(
@@ -429,7 +428,7 @@ fun LibraryScreen(
                                         Icons.Default.Refresh,
 
                                     contentDescription =
-                                        "Scan music",
+                                        stringResource(R.string.cd_scan_music),
 
                                     tint =
                                         AeroColors.Accent
@@ -497,12 +496,12 @@ fun LibraryScreen(
 
                                     Text(
                                         text =
-                                            "Search songs, albums, artists",
+                                            stringResource(R.string.library_search_hint),
 
                                         color =
                                             AeroColors.TextSecondary,
 
-                                        fontSize = 13.sp
+                                        style = MaterialTheme.typography.bodySmall,
                                     )
                                 }
 
@@ -516,11 +515,9 @@ fun LibraryScreen(
                                     singleLine = true,
 
                                     textStyle =
-                                        TextStyle(
+                                        MaterialTheme.typography.bodySmall.copy(
                                             color =
-                                                AeroColors.TextPrimary,
-
-                                            fontSize = 13.sp
+                                                AeroColors.TextPrimary
                                         ),
 
                                     cursorBrush =
@@ -549,7 +546,7 @@ fun LibraryScreen(
                                             Icons.Default.Close,
 
                                         contentDescription =
-                                            "Clear search",
+                                            stringResource(R.string.cd_clear_search),
 
                                         tint =
                                             AeroColors.TextSecondary
@@ -604,9 +601,9 @@ fun LibraryScreen(
                                     Text(
                                         text =
                                             when (tab) {
-                                                LibraryTab.SONGS -> "Songs"
-                                                LibraryTab.ALBUMS -> "Albums"
-                                                LibraryTab.ARTISTS -> "Artists"
+                                                LibraryTab.SONGS -> stringResource(R.string.library_tab_songs)
+                                                LibraryTab.ALBUMS -> stringResource(R.string.library_tab_albums)
+                                                LibraryTab.ARTISTS -> stringResource(R.string.library_tab_artists)
                                             },
 
                                         color =
@@ -616,7 +613,7 @@ fun LibraryScreen(
                                                 AeroColors.TextSecondary
                                             },
 
-                                        fontSize = 13.sp
+                                        style = MaterialTheme.typography.bodySmall,
                                     )
                                 }
                             }
@@ -658,12 +655,12 @@ fun LibraryScreen(
 
                                 Text(
                                     text =
-                                        "Artist: $artistFilter",
+                                        stringResource(R.string.library_artist_filter, artistFilter ?: ""),
 
                                     color =
                                         AeroColors.Accent,
 
-                                    fontSize = 12.sp
+                                    style = MaterialTheme.typography.labelMedium,
                                 )
 
                                 Icon(
@@ -671,7 +668,7 @@ fun LibraryScreen(
                                         Icons.Default.Close,
 
                                     contentDescription =
-                                        "Clear artist filter",
+                                        stringResource(R.string.cd_clear_artist_filter),
 
                                     tint =
                                         AeroColors.Accent,
@@ -829,8 +826,7 @@ fun LibraryScreen(
                                             color =
                                                 AeroColors.TextPrimary,
 
-                                            fontSize =
-                                                14.sp,
+                                            style = MaterialTheme.typography.bodyMedium,
 
                                             maxLines =
                                                 1
@@ -843,8 +839,7 @@ fun LibraryScreen(
                                             color =
                                                 AeroColors.TextSecondary,
 
-                                            fontSize =
-                                                12.sp,
+                                            style = MaterialTheme.typography.labelMedium,
 
                                             maxLines =
                                                 1
@@ -857,8 +852,7 @@ fun LibraryScreen(
                                             color =
                                                 AeroColors.TextTertiary,
 
-                                            fontSize =
-                                                11.sp,
+                                            style = MaterialTheme.typography.labelSmall,
 
                                             maxLines =
                                                 1
@@ -877,9 +871,9 @@ fun LibraryScreen(
 
                                             contentDescription =
                                                 if (isPlaying) {
-                                                    "Playing"
+                                                    stringResource(R.string.cd_playing)
                                                 } else {
-                                                    "Paused"
+                                                    stringResource(R.string.cd_paused)
                                                 },
 
                                             tint =
@@ -911,9 +905,9 @@ fun LibraryScreen(
 
                                             contentDescription =
                                                 if (isFavorite) {
-                                                    "Quitar de favoritos"
+                                                    stringResource(R.string.favorites_remove)
                                                 } else {
-                                                    "Agregar a favoritos"
+                                                    stringResource(R.string.cd_favorite_add)
                                                 },
 
                                             tint =
@@ -942,7 +936,7 @@ fun LibraryScreen(
                                                 Icons.Default.PlaylistAdd,
 
                                             contentDescription =
-                                                "Agregar a playlist",
+                                                stringResource(R.string.playlist_add_to),
 
                                             tint =
                                                 AeroColors.TextTertiary,
@@ -1063,13 +1057,16 @@ fun LibraryScreen(
 
                 Text(
                     text =
-                        "${selectedFolders.size} music folder(s)",
+                        pluralStringResource(
+                            R.plurals.music_folders_count,
+                            selectedFolders.size,
+                            selectedFolders.size
+                        ),
 
                     color =
                         AeroColors.TextPrimary,
 
-                    fontSize =
-                        14.sp,
+                    style = MaterialTheme.typography.bodyMedium,
 
                     modifier =
                         Modifier
@@ -1089,7 +1086,7 @@ fun LibraryScreen(
                             Icons.Default.Add,
 
                         contentDescription =
-                            "Add music folder",
+                            stringResource(R.string.cd_add_music_folder),
 
                         tint =
                             AeroColors.Accent
@@ -1129,11 +1126,11 @@ private fun SortOrderSelector(
     Box {
 
         Text(
-            text = "Sort: " + sortOrderLabel(sortOrder),
+            text = stringResource(R.string.library_sort_prefix, sortOrderLabel(sortOrder)),
 
             color = AeroColors.Accent,
 
-            fontSize = 12.sp,
+            style = MaterialTheme.typography.labelMedium,
 
             modifier =
                 Modifier.clickable {
@@ -1143,7 +1140,16 @@ private fun SortOrderSelector(
 
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
+
+            // Fase 7 (Aero Dark UI refinement, 0.5.0): sin esto el
+            // menú usaba el blanco/negro por defecto de Material —
+            // pasaba desapercibido en Aero Claro pero quedaba como
+            // un recuadro blanco genérico en Aero Dark, el mismo
+            // tipo de problema que la zona inferior de la barra de
+            // navegación. Mismo color que ya usan diálogos/hojas
+            // inferiores (Sleep Timer, confirmar borrado, etc.).
+            containerColor = AeroColors.DialogSurface
         ) {
 
             SortOrder.entries.forEach { option ->
@@ -1151,7 +1157,8 @@ private fun SortOrderSelector(
                 DropdownMenuItem(
                     text = {
                         Text(
-                            text = sortOrderLabel(option)
+                            text = sortOrderLabel(option),
+                            color = AeroColors.TextPrimary
                         )
                     },
 
@@ -1219,14 +1226,14 @@ private fun AlbumRow(
             Text(
                 text = album.name,
                 color = AeroColors.TextPrimary,
-                fontSize = 15.sp,
+                style = MaterialTheme.typography.bodyLarge,
                 maxLines = 1
             )
 
             Text(
                 text = album.artist,
                 color = AeroColors.TextSecondary,
-                fontSize = 12.sp,
+                style = MaterialTheme.typography.labelMedium,
                 maxLines = 1
             )
         }
@@ -1234,7 +1241,7 @@ private fun AlbumRow(
         Text(
             text = "${album.tracks.size}",
             color = AeroColors.TextTertiary,
-            fontSize = 12.sp
+            style = MaterialTheme.typography.labelMedium,
         )
     }
 }
@@ -1299,19 +1306,26 @@ private fun ArtistRow(
             Text(
                 text = artist.name,
                 color = AeroColors.TextPrimary,
-                fontSize = 15.sp,
+                style = MaterialTheme.typography.bodyLarge,
                 maxLines = 1
             )
 
             Text(
                 text =
-                    "${artist.albumCount} album" +
-                    (if (artist.albumCount != 1) "s" else "") +
-                    " · ${artist.tracks.size} song" +
-                    (if (artist.tracks.size != 1) "s" else ""),
+                    pluralStringResource(
+                        R.plurals.album_count,
+                        artist.albumCount,
+                        artist.albumCount
+                    ) +
+                    " · " +
+                    pluralStringResource(
+                        R.plurals.song_count,
+                        artist.tracks.size,
+                        artist.tracks.size
+                    ),
 
                 color = AeroColors.TextSecondary,
-                fontSize = 12.sp
+                style = MaterialTheme.typography.labelMedium,
             )
         }
     }

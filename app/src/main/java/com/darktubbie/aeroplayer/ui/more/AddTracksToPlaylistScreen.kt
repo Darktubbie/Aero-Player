@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -27,9 +28,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.darktubbie.aeroplayer.R
 import com.darktubbie.aeroplayer.data.AudioTrack
 import com.darktubbie.aeroplayer.ui.components.AeroBackground
 import com.darktubbie.aeroplayer.ui.components.AlbumArt
@@ -71,7 +72,7 @@ fun AddTracksToPlaylistScreen(
 
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Volver",
+                        contentDescription = stringResource(R.string.cd_back),
                         tint = Color.White
                     )
                 }
@@ -81,16 +82,15 @@ fun AddTracksToPlaylistScreen(
                 ) {
 
                     Text(
-                        text = "Agregar canciones",
+                        text = stringResource(R.string.playlist_add_songs_title),
                         color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium
+                        style = MaterialTheme.typography.titleLarge,
                     )
 
                     Text(
-                        text = "a $playlistName",
+                        text = stringResource(R.string.playlist_add_songs_to, playlistName),
                         color = AeroColors.OnBackgroundSubtitle,
-                        fontSize = 12.sp
+                        style = MaterialTheme.typography.labelMedium,
                     )
                 }
             }
@@ -105,9 +105,9 @@ fun AddTracksToPlaylistScreen(
                 ) {
 
                     Text(
-                        text = "No hay canciones en tu biblioteca todavía",
+                        text = stringResource(R.string.library_empty),
                         color = AeroColors.OnBackgroundSubtitle,
-                        fontSize = 13.sp
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
 
@@ -169,14 +169,14 @@ fun AddTracksToPlaylistScreen(
                                 Text(
                                     text = track.title,
                                     color = AeroColors.TextPrimary,
-                                    fontSize = 13.sp,
+                                    style = MaterialTheme.typography.bodySmall,
                                     maxLines = 1
                                 )
 
                                 Text(
                                     text = track.artist,
                                     color = AeroColors.TextSecondary,
-                                    fontSize = 11.sp,
+                                    style = MaterialTheme.typography.labelSmall,
                                     maxLines = 1
                                 )
                             }
@@ -195,7 +195,7 @@ fun AddTracksToPlaylistScreen(
 
                                     Icon(
                                         imageVector = Icons.Default.Check,
-                                        contentDescription = "Ya está en la playlist",
+                                        contentDescription = stringResource(R.string.playlist_already_in_it_2),
                                         tint = Color.White,
                                         modifier = Modifier.size(14.dp)
                                     )

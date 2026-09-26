@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PlaylistPlay
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -34,9 +35,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.darktubbie.aeroplayer.R
 import com.darktubbie.aeroplayer.data.AudioTrack
 import com.darktubbie.aeroplayer.data.Playlist
 import com.darktubbie.aeroplayer.ui.more.PlaylistNameDialog
@@ -101,17 +102,16 @@ fun AddToPlaylistSheet(
             ) {
 
                 Text(
-                    text = "Agregar a playlist",
+                    text = stringResource(R.string.playlist_add_to),
                     color = AeroColors.TextPrimary,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
+                    style = MaterialTheme.typography.titleMedium,
                 )
 
                 IconButton(onClick = onDismiss) {
 
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Cerrar",
+                        contentDescription = stringResource(R.string.cd_close),
                         tint = AeroColors.TextSecondary
                     )
                 }
@@ -142,10 +142,9 @@ fun AddToPlaylistSheet(
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Text(
-                    text = "Nueva playlist",
+                    text = stringResource(R.string.playlist_new),
                     color = AeroColors.Accent,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium
+                    style = MaterialTheme.typography.labelLarge,
                 )
             }
 
@@ -154,9 +153,9 @@ fun AddToPlaylistSheet(
             if (playlists.isEmpty()) {
 
                 Text(
-                    text = "Todavía no tenés playlists creadas",
+                    text = stringResource(R.string.playlist_none_yet),
                     color = AeroColors.TextTertiary,
-                    fontSize = 12.sp,
+                    style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
 
@@ -204,7 +203,7 @@ fun AddToPlaylistSheet(
                             Text(
                                 text = playlist.name,
                                 color = AeroColors.TextPrimary,
-                                fontSize = 13.sp,
+                                style = MaterialTheme.typography.bodySmall,
                                 maxLines = 1,
                                 modifier = Modifier.weight(1f)
                             )
@@ -223,7 +222,7 @@ fun AddToPlaylistSheet(
 
                                     Icon(
                                         imageVector = Icons.Default.Check,
-                                        contentDescription = "Ya está en esta playlist",
+                                        contentDescription = stringResource(R.string.playlist_already_in_it),
                                         tint = Color.White,
                                         modifier = Modifier.size(13.dp)
                                     )
@@ -239,7 +238,7 @@ fun AddToPlaylistSheet(
     if (showCreateDialog) {
 
         PlaylistNameDialog(
-            title = "Nueva playlist",
+            title = stringResource(R.string.playlist_new),
             initialValue = "",
 
             onConfirm = { name ->

@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Switch
@@ -35,9 +36,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.darktubbie.aeroplayer.R
 import com.darktubbie.aeroplayer.data.SettingsRepository
 import com.darktubbie.aeroplayer.ui.components.AeroBackground
 import com.darktubbie.aeroplayer.ui.effects.AmbientIntensity
@@ -56,7 +58,8 @@ private const val REPO_URL =
  *
  * Categorías deliberadamente acotadas a lo que el proyecto
  * realmente tiene para ofrecer hoy — nada de opciones de relleno:
- * - Apariencia: tema (Aero claro / Dark Aero, post-0.4.0).
+ * - Apariencia: tema (Light Aero / Aero Dark, post-0.4.0) e idioma
+ *   de la interfaz (Fase 2, 0.5.0).
  * - Reproducción: pausa por Bluetooth (Fase 1). Shuffle/repeat
  *   también son persistentes desde esta fase, pero no tienen un
  *   toggle propio acá: son un comportamiento de fondo ("recordar lo
@@ -73,10 +76,17 @@ private const val REPO_URL =
  * - Aplicación: versión instalada y repositorio.
  *
  * [sortOrder]/[onSortOrderChange], [ambientIntensity]/
- * [onAmbientIntensityChange] y [appTheme]/[onAppThemeChange] vienen
- * de MainViewModel (afectan otras pantallas); la preferencia de
- * Bluetooth sigue siendo standalone vía SettingsRepository porque
- * nada más en la app necesita reaccionar a ella en vivo.
+ * [onAmbientIntensityChange], [appTheme]/[onAppThemeChange] y
+ * [appLanguage]/[onAppLanguageChange] vienen de MainViewModel
+ * (afectan otras pantallas, o —en el caso del idioma— a toda la
+ * app); la preferencia de Bluetooth sigue siendo standalone vía
+ * SettingsRepository porque nada más en la app necesita reaccionar
+ * a ella en vivo.
+ *
+ * [onAppLanguageChange] recrea la Activity (ver
+ * [com.darktubbie.aeroplayer.MainActivity.attachBaseContext]): es
+ * la única forma de que Compose vuelva a resolver
+ * `stringResource()` con el nuevo idioma.
  */
 @Composable
 fun SettingsScreen(
@@ -86,6 +96,8 @@ fun SettingsScreen(
     onAmbientIntensityChange: (AmbientIntensity) -> Unit,
     appTheme: AppTheme,
     onAppThemeChange: (AppTheme) -> Unit,
+    appLanguage: String,
+    onAppLanguageChange: (String) -> Unit,
     onOpenFolders: () -> Unit,
     onBack: () -> Unit
 ) {
@@ -133,16 +145,15 @@ fun SettingsScreen(
 
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Volver",
+                        contentDescription = stringResource(R.string.cd_back),
                         tint = Color.White
                     )
                 }
 
                 Text(
-                    text = "Ajustes",
+                    text = stringResource(R.string.settings_title),
                     color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Medium,
+                    style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.padding(start = 4.dp)
                 )
             }
@@ -154,7 +165,7 @@ fun SettingsScreen(
             ) {
 
                 item {
-                    SettingsSectionHeader("Apariencia")
+                    SettingsSectionHeader(stringResource(R.string.settings_section_appearance))
                 }
 
                 item {
@@ -162,9 +173,9 @@ fun SettingsScreen(
                     SettingsCard {
 
                         Text(
-                            text = "Tema",
+                            text = stringResource(R.string.settings_theme_label),
                             color = AeroColors.TextPrimary,
-                            fontSize = 14.sp,
+                            style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(bottom = 10.dp)
                         )
 
@@ -174,7 +185,7 @@ fun SettingsScreen(
                         ) {
 
                             IntensityChip(
-                                label = "Aero claro",
+                                label = stringResource(R.string.settings_theme_light),
                                 selected = appTheme == AppTheme.LIGHT_AERO,
                                 onClick = {
                                     onAppThemeChange(AppTheme.LIGHT_AERO)
@@ -183,10 +194,43 @@ fun SettingsScreen(
                             )
 
                             IntensityChip(
-                                label = "Dark Aero",
+                                label = stringResource(R.string.settings_theme_dark),
                                 selected = appTheme == AppTheme.DARK_AERO,
                                 onClick = {
                                     onAppThemeChange(AppTheme.DARK_AERO)
+                                },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        Text(
+                            text = stringResource(R.string.settings_language_label),
+                            color = AeroColors.TextPrimary,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(bottom = 10.dp)
+                        )
+
+                        Row(
+                            horizontalArrangement =
+                                Arrangement.spacedBy(6.dp)
+                        ) {
+
+                            IntensityChip(
+                                label = stringResource(R.string.settings_language_es),
+                                selected = appLanguage == "es",
+                                onClick = {
+                                    onAppLanguageChange("es")
+                                },
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            IntensityChip(
+                                label = stringResource(R.string.settings_language_en),
+                                selected = appLanguage == "en",
+                                onClick = {
+                                    onAppLanguageChange("en")
                                 },
                                 modifier = Modifier.weight(1f)
                             )
@@ -195,7 +239,7 @@ fun SettingsScreen(
                 }
 
                 item {
-                    SettingsSectionHeader("Reproducción")
+                    SettingsSectionHeader(stringResource(R.string.settings_section_playback))
                 }
 
                 item {
@@ -215,21 +259,15 @@ fun SettingsScreen(
                             ) {
 
                                 Text(
-                                    text =
-                                        "Pausar al desconectar " +
-                                        "Bluetooth",
+                                    text = stringResource(R.string.settings_bluetooth_title),
                                     color = AeroColors.TextPrimary,
-                                    fontSize = 14.sp
+                                    style = MaterialTheme.typography.bodyMedium,
                                 )
 
                                 Text(
-                                    text =
-                                        "Pausa la música si se " +
-                                        "desconecta el dispositivo " +
-                                        "Bluetooth que la está " +
-                                        "reproduciendo",
+                                    text = stringResource(R.string.settings_bluetooth_subtitle),
                                     color = AeroColors.TextTertiary,
-                                    fontSize = 12.sp,
+                                    style = MaterialTheme.typography.labelMedium,
                                     modifier =
                                         Modifier.padding(
                                             top = 4.dp,
@@ -263,7 +301,7 @@ fun SettingsScreen(
                 }
 
                 item {
-                    SettingsSectionHeader("Animaciones")
+                    SettingsSectionHeader(stringResource(R.string.settings_section_animations))
                 }
 
                 item {
@@ -271,18 +309,15 @@ fun SettingsScreen(
                     SettingsCard {
 
                         Text(
-                            text = "Intensidad de efectos ambientales",
+                            text = stringResource(R.string.settings_ambient_intensity_label),
                             color = AeroColors.TextPrimary,
-                            fontSize = 14.sp
+                            style = MaterialTheme.typography.bodyMedium,
                         )
 
                         Text(
-                            text =
-                                "Se pausan solos si no hay música " +
-                                "sonando, y respetan \"eliminar " +
-                                "animaciones\" del sistema",
+                            text = stringResource(R.string.settings_ambient_intensity_hint),
                             color = AeroColors.TextTertiary,
-                            fontSize = 12.sp,
+                            style = MaterialTheme.typography.labelMedium,
                             modifier = Modifier.padding(
                                 top = 4.dp,
                                 bottom = 12.dp
@@ -311,7 +346,7 @@ fun SettingsScreen(
                 }
 
                 item {
-                    SettingsSectionHeader("Biblioteca")
+                    SettingsSectionHeader(stringResource(R.string.settings_section_library))
                 }
 
                 item {
@@ -319,9 +354,9 @@ fun SettingsScreen(
                     SettingsCard {
 
                         Text(
-                            text = "Orden predeterminado de Songs",
+                            text = stringResource(R.string.settings_default_sort),
                             color = AeroColors.TextPrimary,
-                            fontSize = 14.sp,
+                            style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
 
@@ -382,9 +417,9 @@ fun SettingsScreen(
                             )
 
                             Text(
-                                text = "Carpetas de música",
+                                text = stringResource(R.string.settings_music_folders),
                                 color = AeroColors.TextPrimary,
-                                fontSize = 14.sp,
+                                style = MaterialTheme.typography.bodyMedium,
                                 modifier =
                                     Modifier.padding(start = 10.dp)
                             )
@@ -399,7 +434,7 @@ fun SettingsScreen(
                 }
 
                 item {
-                    SettingsSectionHeader("Aplicación")
+                    SettingsSectionHeader(stringResource(R.string.settings_section_app))
                 }
 
                 item {
@@ -413,24 +448,24 @@ fun SettingsScreen(
                         ) {
 
                             Text(
-                                text = "Versión",
+                                text = stringResource(R.string.settings_version),
                                 color = AeroColors.TextPrimary,
-                                fontSize = 14.sp
+                                style = MaterialTheme.typography.bodyMedium,
                             )
 
                             Text(
                                 text = appVersion,
                                 color = AeroColors.TextTertiary,
-                                fontSize = 14.sp
+                                style = MaterialTheme.typography.bodyMedium,
                             )
                         }
 
                         Spacer(modifier = Modifier.height(10.dp))
 
                         Text(
-                            text = "Repositorio",
+                            text = stringResource(R.string.settings_repository),
                             color = AeroColors.Accent,
-                            fontSize = 13.sp,
+                            style = MaterialTheme.typography.bodySmall,
                             modifier =
                                 Modifier.clickable {
 
@@ -457,8 +492,7 @@ private fun SettingsSectionHeader(
     Text(
         text = title,
         color = AeroColors.OnBackgroundSubtitle,
-        fontSize = 12.sp,
-        fontWeight = FontWeight.Medium,
+        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
         modifier = Modifier.padding(
             start = 4.dp,
             top = 4.dp,
@@ -518,17 +552,19 @@ private fun IntensityChip(
             text = label,
             color =
                 if (selected) {
-                    Color.White
+                    AeroColors.OnAccent
                 } else {
                     AeroColors.TextSecondary
                 },
-            fontSize = 10.sp,
-            fontWeight =
-                if (selected) {
-                    FontWeight.Medium
-                } else {
-                    FontWeight.Normal
-                }
+            style =
+                MaterialTheme.typography.labelSmall.copy(
+                    fontWeight =
+                        if (selected) {
+                            FontWeight.Medium
+                        } else {
+                            FontWeight.Normal
+                        }
+                )
         )
     }
 }
@@ -559,12 +595,12 @@ private fun SortOrderPicker(
 
                 color =
                     if (selected) {
-                        Color.White
+                        AeroColors.OnAccent
                     } else {
                         AeroColors.TextSecondary
                     },
 
-                fontSize = 10.sp,
+                style = MaterialTheme.typography.labelSmall,
 
                 modifier =
                     Modifier
@@ -586,15 +622,16 @@ private fun SortOrderPicker(
     }
 }
 
+@Composable
 private fun ambientIntensityLabel(
     intensity: AmbientIntensity
 ): String {
 
     return when (intensity) {
-        AmbientIntensity.OFF -> "Apagado"
-        AmbientIntensity.STATIC -> "Estático"
-        AmbientIntensity.LOW -> "Bajo"
-        AmbientIntensity.NORMAL -> "Normal"
-        AmbientIntensity.HIGH -> "Alto"
+        AmbientIntensity.OFF -> stringResource(R.string.intensity_off)
+        AmbientIntensity.STATIC -> stringResource(R.string.intensity_static)
+        AmbientIntensity.LOW -> stringResource(R.string.intensity_low)
+        AmbientIntensity.NORMAL -> stringResource(R.string.intensity_normal)
+        AmbientIntensity.HIGH -> stringResource(R.string.intensity_high)
     }
 }

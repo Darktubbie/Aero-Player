@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -26,9 +27,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.darktubbie.aeroplayer.R
 import com.darktubbie.aeroplayer.playback.SleepTimerMode
 import com.darktubbie.aeroplayer.playback.SleepTimerState
 import com.darktubbie.aeroplayer.ui.theme.AeroColors
@@ -100,17 +102,16 @@ fun SleepTimerSheet(
             ) {
 
                 Text(
-                    text = "Sleep Timer",
+                    text = stringResource(R.string.sleep_timer_title),
                     color = AeroColors.TextPrimary,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium
+                    style = MaterialTheme.typography.titleLarge,
                 )
 
                 IconButton(onClick = onDismiss) {
 
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Cerrar",
+                        contentDescription = stringResource(R.string.cd_close),
                         tint = AeroColors.TextSecondary
                     )
                 }
@@ -128,9 +129,9 @@ fun SleepTimerSheet(
             } else {
 
                 Text(
-                    text = "Por tiempo",
+                    text = stringResource(R.string.sleep_timer_by_time),
                     color = AeroColors.TextSecondary,
-                    fontSize = 13.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
@@ -156,9 +157,9 @@ fun SleepTimerSheet(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Después de X canciones",
+                    text = stringResource(R.string.sleep_timer_by_songs),
                     color = AeroColors.TextSecondary,
-                    fontSize = 13.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
@@ -206,7 +207,8 @@ private fun ActiveTimerContent(
                 val seconds =
                     totalSeconds % 60
 
-                "Se pausará en %d:%02d".format(
+                stringResource(
+                    R.string.sleep_timer_pause_in,
                     minutes,
                     seconds
                 )
@@ -215,13 +217,16 @@ private fun ActiveTimerContent(
             is SleepTimerMode.BySongs -> {
 
                 val label =
-                    if (state.remainingSongs == 1) {
-                        "1 canción"
-                    } else {
-                        "${state.remainingSongs} canciones"
-                    }
+                    pluralStringResource(
+                        R.plurals.song_count,
+                        state.remainingSongs,
+                        state.remainingSongs
+                    )
 
-                "Se pausará después de $label"
+                stringResource(
+                    R.string.sleep_timer_pause_after,
+                    label
+                )
             }
 
             null -> ""
@@ -230,7 +235,7 @@ private fun ActiveTimerContent(
     Text(
         text = description,
         color = AeroColors.TextPrimary,
-        fontSize = 15.sp,
+        style = MaterialTheme.typography.bodyLarge,
         modifier = Modifier.padding(vertical = 8.dp)
     )
 
@@ -249,10 +254,9 @@ private fun ActiveTimerContent(
     ) {
 
         Text(
-            text = "Cancelar temporizador",
+            text = stringResource(R.string.sleep_timer_cancel),
             color = AeroColors.Accent,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium
+            style = MaterialTheme.typography.labelLarge,
         )
     }
 }
@@ -280,8 +284,7 @@ private fun OptionChip(
         Text(
             text = label,
             color = AeroColors.Accent,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Medium
+            style = MaterialTheme.typography.labelLarge,
         )
     }
 }

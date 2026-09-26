@@ -5,6 +5,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -27,6 +29,7 @@ import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
@@ -43,9 +46,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.darktubbie.aeroplayer.R
 import com.darktubbie.aeroplayer.ape.ApeEvent
 import com.darktubbie.aeroplayer.ape.ApeRepository
 import com.darktubbie.aeroplayer.ape.ApeSaveResult
@@ -53,6 +57,11 @@ import com.darktubbie.aeroplayer.ape.ApeWriter
 import com.darktubbie.aeroplayer.data.AudioTrack
 import com.darktubbie.aeroplayer.data.EffectAssetRepository
 import com.darktubbie.aeroplayer.ui.components.AeroBackground
+import com.darktubbie.aeroplayer.ui.effects.AmbientEventType
+import com.darktubbie.aeroplayer.ui.effects.ambientEventTypeEmoji
+import com.darktubbie.aeroplayer.ui.effects.ambientEventTypeFromKey
+import com.darktubbie.aeroplayer.ui.effects.ambientEventTypeKey
+import com.darktubbie.aeroplayer.ui.effects.ambientEventTypeLabel
 import com.darktubbie.aeroplayer.ui.theme.AeroColors
 import kotlinx.coroutines.launch
 
@@ -70,8 +79,9 @@ import kotlinx.coroutines.launch
  * 5-6. Elegir un efecto integrado + su duración.
  * 7. Guardar el `.ape` (ver [ApeWriter]).
  *
- * Solo efectos integrados (bubble/fish/jellyfish/cloud) — un editor
- * de efectos personalizados es explícitamente una fase futura, no
+ * Solo efectos integrados (bubble/fish/jellyfish/cloud/leaf, este
+ * último agregado en la Fase 6 de ".aero" 0.5.0) — un editor de
+ * efectos personalizados es explícitamente una fase futura, no
  * esto.
  */
 @Composable
@@ -154,7 +164,7 @@ fun ApeEditorScreen(
 
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Volver",
+                        contentDescription = stringResource(R.string.cd_back),
                         tint = Color.White
                     )
                 }
@@ -165,16 +175,15 @@ fun ApeEditorScreen(
                 ) {
 
                     Text(
-                        text = "Editor APE",
+                        text = stringResource(R.string.ape_editor_title),
                         color = Color.White,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium
+                        style = MaterialTheme.typography.headlineSmall,
                     )
 
                     Text(
                         text = track.title,
                         color = AeroColors.TextSecondary,
-                        fontSize = 13.sp,
+                        style = MaterialTheme.typography.bodySmall,
                         maxLines = 1
                     )
                 }
@@ -193,7 +202,7 @@ fun ApeEditorScreen(
                     Text(
                         text = formatTime(positionMs),
                         color = AeroColors.TextPrimary,
-                        fontSize = 13.sp
+                        style = MaterialTheme.typography.bodySmall,
                     )
 
                     IconButton(onClick = onPlayPauseClick) {
@@ -207,7 +216,7 @@ fun ApeEditorScreen(
                                 },
 
                             contentDescription =
-                                if (isPlaying) "Pausar" else "Reproducir",
+                                if (isPlaying) stringResource(R.string.cd_pause_action) else stringResource(R.string.cd_play_action),
 
                             tint = AeroColors.Accent
                         )
@@ -216,7 +225,7 @@ fun ApeEditorScreen(
                     Text(
                         text = formatTime(durationMs),
                         color = AeroColors.TextSecondary,
-                        fontSize = 13.sp
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
 
@@ -241,46 +250,50 @@ fun ApeEditorScreen(
 
                 Text(
                     text =
-                        "Añadir efecto en ${formatTime(positionMs)}",
+                        stringResource(R.string.ape_add_effect_at, formatTime(positionMs)),
 
                     color = AeroColors.TextPrimary,
-                    fontSize = 14.sp
+                    style = MaterialTheme.typography.bodyMedium,
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Row(
                     horizontalArrangement =
-                        Arrangement.spacedBy(8.dp)
+                        Arrangement.spacedBy(8.dp),
+
+                    // Fix (Fase 6, 0.5.0): con 5 opciones (bubble/
+                    // fish/jellyfish/cloud/leaf) ya no entraban
+                    // cómodas en el ancho de la tarjeta — un Row
+                    // común no las achica, las desborda, y por eso
+                    // la última (hojas) se veía cortada/aplastada
+                    // contra el borde. Con scroll horizontal quedan
+                    // a su tamaño normal y se desliza para ver las
+                    // que no entran.
+                    modifier =
+                        Modifier.horizontalScroll(
+                            rememberScrollState()
+                        )
                 ) {
 
-                    EffectOption(
-                        emoji = "🫧",
-                        label = "Burbuja",
-                        selected = selectedEffect == "bubble",
-                        onClick = { selectedEffect = "bubble" }
-                    )
+                    // Fase 6 de ".aero" (0.5.0) — mejor organización:
+                    // antes eran 4 EffectOption(...) casi idénticos
+                    // hardcodeados a mano (uno por tipo). Ahora es un
+                    // loop sobre AmbientEventType.entries — agregar un
+                    // tipo nuevo (como LEAF en esta misma fase) ya no
+                    // requiere copiar/pegar un bloque acá.
+                    for (type in AmbientEventType.entries) {
 
-                    EffectOption(
-                        emoji = "🐠",
-                        label = "Pez",
-                        selected = selectedEffect == "fish",
-                        onClick = { selectedEffect = "fish" }
-                    )
+                        val key =
+                            ambientEventTypeKey(type)
 
-                    EffectOption(
-                        emoji = "🪼",
-                        label = "Medusa",
-                        selected = selectedEffect == "jellyfish",
-                        onClick = { selectedEffect = "jellyfish" }
-                    )
-
-                    EffectOption(
-                        emoji = "☁️",
-                        label = "Nube",
-                        selected = selectedEffect == "cloud",
-                        onClick = { selectedEffect = "cloud" }
-                    )
+                        EffectOption(
+                            emoji = ambientEventTypeEmoji(type),
+                            label = ambientEventTypeLabel(type),
+                            selected = selectedEffect == key,
+                            onClick = { selectedEffect = key }
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -296,9 +309,9 @@ fun ApeEditorScreen(
                 ) {
 
                     Text(
-                        text = "Duración",
+                        text = stringResource(R.string.ape_duration_label),
                         color = AeroColors.TextSecondary,
-                        fontSize = 13.sp,
+                        style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(end = 10.dp)
                     )
 
@@ -313,15 +326,15 @@ fun ApeEditorScreen(
 
                         Icon(
                             imageVector = Icons.Default.Remove,
-                            contentDescription = "Menos duración",
+                            contentDescription = stringResource(R.string.cd_less_duration),
                             tint = AeroColors.TextPrimary
                         )
                     }
 
                     Text(
-                        text = "${durationSeconds}s",
+                        text = stringResource(R.string.ape_duration_seconds, durationSeconds),
                         color = AeroColors.TextPrimary,
-                        fontSize = 14.sp,
+                        style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.width(32.dp)
                     )
 
@@ -336,7 +349,7 @@ fun ApeEditorScreen(
 
                         Icon(
                             imageVector = Icons.Default.Add,
-                            contentDescription = "Más duración",
+                            contentDescription = stringResource(R.string.cd_more_duration),
                             tint = AeroColors.TextPrimary
                         )
                     }
@@ -345,7 +358,7 @@ fun ApeEditorScreen(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 GlassButton(
-                    text = "Añadir efecto aquí",
+                    text = stringResource(R.string.ape_add_effect_here),
 
                     onClick = {
 
@@ -366,9 +379,9 @@ fun ApeEditorScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Eventos (${events.size})",
+                text = stringResource(R.string.ape_events_count, events.size),
                 color = Color.White,
-                fontSize = 15.sp
+                style = MaterialTheme.typography.bodyLarge,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -399,7 +412,7 @@ fun ApeEditorScreen(
 
             GlassButton(
                 text =
-                    if (saving) "Guardando…" else "Guardar .aero",
+                    if (saving) stringResource(R.string.ape_saving) else stringResource(R.string.ape_save_button),
 
                 enabled = !saving,
 
@@ -425,7 +438,10 @@ fun ApeEditorScreen(
                             is ApeSaveResult.Success -> {
                                 statusIsError = false
                                 statusMessage =
-                                    "Guardado en: ${result.path}"
+                                    context.getString(
+                                        R.string.ape_saved_at,
+                                        result.path
+                                    )
 
                                 onSaved()
                             }
@@ -451,7 +467,7 @@ fun ApeEditorScreen(
                             AeroColors.Accent
                         },
 
-                    fontSize = 13.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }
@@ -459,9 +475,9 @@ fun ApeEditorScreen(
             if (!loaded) {
 
                 Text(
-                    text = "Cargando eventos existentes…",
+                    text = stringResource(R.string.ape_loading_events),
                     color = AeroColors.TextSecondary,
-                    fontSize = 12.sp,
+                    style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }
@@ -519,8 +535,7 @@ private fun GlassButton(
         Text(
             text = text,
             color = Color.White,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium
+            style = MaterialTheme.typography.labelLarge,
         )
     }
 }
@@ -580,13 +595,13 @@ private fun CustomAssetSection(
         Text(
             text =
                 if (currentAssetPath != null) {
-                    "Imagen personalizada activa"
+                    stringResource(R.string.ape_custom_image_active)
                 } else {
-                    "Usando el ícono integrado"
+                    stringResource(R.string.ape_using_builtin_icon)
                 },
 
             color = AeroColors.TextSecondary,
-            fontSize = 12.sp,
+            style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.weight(1f)
         )
 
@@ -599,7 +614,7 @@ private fun CustomAssetSection(
             Icon(
                 imageVector = Icons.Default.Image,
                 contentDescription =
-                    "Elegir imagen personalizada",
+                    stringResource(R.string.ape_choose_custom_image),
                 tint = AeroColors.Accent
             )
         }
@@ -617,7 +632,7 @@ private fun CustomAssetSection(
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription =
-                        "Quitar imagen personalizada",
+                        stringResource(R.string.ape_remove_custom_image),
                     tint = AeroColors.TextSecondary
                 )
             }
@@ -666,7 +681,7 @@ private fun EffectOption(
         Text(
             text = label,
             color = AeroColors.TextPrimary,
-            fontSize = 11.sp
+            style = MaterialTheme.typography.labelSmall,
         )
     }
 }
@@ -698,39 +713,39 @@ private fun EventRow(
                 "${event.duration / 1000}s",
 
             color = AeroColors.TextPrimary,
-            fontSize = 13.sp
+            style = MaterialTheme.typography.bodySmall,
         )
 
         IconButton(onClick = onDelete) {
 
             Icon(
                 imageVector = Icons.Default.Close,
-                contentDescription = "Quitar evento",
+                contentDescription = stringResource(R.string.cd_remove_event),
                 tint = AeroColors.TextSecondary
             )
         }
     }
 }
 
+// Fase 6 de ".aero" (0.5.0) — mejor organización: delegan en el
+// registro único ([ambientEventTypeFromKey]/[ambientEventTypeEmoji]/
+// [ambientEventTypeLabel]) en vez de repetir acá su propio `when` de
+// Strings. El fallback para un nombre no reconocido se mantiene
+// igual que antes (compatibilidad con `.ape` viejos que puedan
+// mencionar un efecto que esta versión no conoce): "✨" genérico
+// para el emoji, el texto crudo tal cual para el label.
 private fun effectEmoji(effect: String): String =
 
-    when (effect.lowercase()) {
-        "bubble", "bubble_front" -> "🫧"
-        "fish" -> "🐠"
-        "jellyfish" -> "🪼"
-        "cloud" -> "☁️"
-        else -> "✨"
-    }
+    ambientEventTypeFromKey(effect)
+        ?.let { ambientEventTypeEmoji(it) }
+        ?: "✨"
 
+@Composable
 private fun effectLabel(effect: String): String =
 
-    when (effect.lowercase()) {
-        "bubble", "bubble_front" -> "Burbuja"
-        "fish" -> "Pez"
-        "jellyfish" -> "Medusa"
-        "cloud" -> "Nube"
-        else -> effect
-    }
+    ambientEventTypeFromKey(effect)
+        ?.let { ambientEventTypeLabel(it) }
+        ?: effect
 
 private fun formatTime(ms: Long): String {
 

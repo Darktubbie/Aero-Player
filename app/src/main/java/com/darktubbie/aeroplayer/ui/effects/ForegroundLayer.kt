@@ -88,6 +88,9 @@ private fun newSpriteId(): Long =
  *   repartidas (no muy juntas), se mueven en horizontal
  *   (izquierda-derecha o viceversa) igual que las burbujas, pero
  *   más lento.
+ * - Hojas ([AmbientEventType.LEAF], emoji 🍃, Fase 6 de ".aero"
+ *   0.5.0): grupos de 2 a 4, repartidas, cayendo de arriba hacia
+ *   abajo con un balanceo lateral moderado.
  *
  * Cada [ActiveSprite] es una animación independiente
  * (`Animatable` + coroutine propia); la posición se lee en fase de
@@ -212,17 +215,20 @@ fun ForegroundLayer(
 
                 when (Random.nextFloat()) {
 
-                    in 0f..0.35f ->
+                    in 0f..0.24f ->
                         spawnBubbleGroup(protectedZones, sprites)
 
-                    in 0.35f..0.60f ->
+                    in 0.24f..0.44f ->
                         spawnFishSchool(protectedZones, sprites)
 
-                    in 0.60f..0.80f ->
+                    in 0.44f..0.62f ->
                         spawnJellyfishGroup(sprites)
 
-                    else ->
+                    in 0.62f..0.82f ->
                         spawnCloudGroup(protectedZones, sprites)
+
+                    else ->
+                        spawnLeafGroup(sprites)
                 }
             }
         }
@@ -327,6 +333,20 @@ fun ForegroundLayer(
                         )
                     }
                 }
+
+                AmbientEventType.LEAF -> {
+
+                    CustomOrBuiltInEffect(
+                        assetRepository = effectAssetRepository,
+                        type = sprite.type,
+                        modifier = offsetModifier
+                    ) {
+
+                        LeafEmoji(
+                            modifier = offsetModifier
+                        )
+                    }
+                }
             }
         }
     }
@@ -408,6 +428,25 @@ private fun spriteOffsetModifier(
                     y = y.roundToInt()
                 )
             }
+
+            AmbientDirection.TOP_TO_BOTTOM -> {
+
+                // Fase 6 de ".aero" (0.5.0), agregada para
+                // AmbientEventType.LEAF: la inversa exacta de
+                // BOTTOM_TO_TOP — de arriba hacia abajo en vez de
+                // abajo hacia arriba, mismo balanceo lateral en X.
+                val startY = -margin
+                val endY = heightPx + margin
+
+                val y = startY + (endY - startY) * p
+
+                val x = widthPx * sprite.lane + wander
+
+                IntOffset(
+                    x = x.roundToInt(),
+                    y = y.roundToInt()
+                )
+            }
         }
     }
 
@@ -473,16 +512,18 @@ private suspend fun CoroutineScope.runApeEvents(
 
 /**
  * Dispara los eventos programados de un `.ape` reutilizando los
- * mismos generadores de grupo que el modo aleatorio (burbujas y
- * medusas en grupo de 3 a 5, peces en cardumen), en vez de una
+ * mismos generadores de grupo que el modo aleatorio (burbujas,
+ * medusas y hojas en grupo, peces en cardumen), en vez de una
  * única instancia solitaria — la única diferencia es que la
  * duración de cada miembro es la indicada en el `.ape` en vez de
  * aleatoria.
  *
- * Nombres de efecto reconocidos en el JSON (insensibles a
- * mayúsculas): "bubble"/"bubble_front", "fish", "jellyfish",
- * "cloud". Un nombre no reconocido simplemente se ignora, sin
- * romper el resto del `.ape`.
+ * Fase 6 de ".aero" (0.5.0) — mejor organización: el parseo del
+ * nombre de texto ([ApeEvent.effect]) a [AmbientEventType] ya no es
+ * un `when` de Strings acá adentro, sale de
+ * [ambientEventTypeFromKey] (un único lugar, compartido con el
+ * editor). Un nombre no reconocido sigue ignorándose sin romper el
+ * resto del `.ape`, igual que antes.
  */
 private fun CoroutineScope.spawnApeEffect(
     event: ApeEvent,
@@ -495,38 +536,44 @@ private fun CoroutineScope.spawnApeEffect(
             .takeIf { it in 1..60_000L }
             ?.toInt()
 
-    when (event.effect.trim().lowercase()) {
+    when (ambientEventTypeFromKey(event.effect)) {
 
-        "bubble", "bubble_front" ->
+        AmbientEventType.BUBBLE_FRONT ->
             spawnBubbleGroup(
                 protectedZones,
                 sprites,
                 fixedDurationMs
             )
 
-        "fish" ->
+        AmbientEventType.FISH ->
             spawnFishSchool(
                 protectedZones,
                 sprites,
                 fixedDurationMs
             )
 
-        "jellyfish" ->
+        AmbientEventType.JELLYFISH ->
             spawnJellyfishGroup(
                 sprites,
                 fixedDurationMs
             )
 
-        "cloud" ->
+        AmbientEventType.CLOUD ->
             spawnCloudGroup(
                 protectedZones,
                 sprites,
                 fixedDurationMs
             )
 
+        AmbientEventType.LEAF ->
+            spawnLeafGroup(
+                sprites,
+                fixedDurationMs
+            )
+
         // Nombre de efecto no reconocido: se ignora este evento y
         // se sigue con el resto del .ape.
-        else -> Unit
+        null -> Unit
     }
 }
 
@@ -543,8 +590,20 @@ private fun CoroutineScope.spawnBubbleGroup(
     fixedDurationMs: Int? = null
 ) {
 
+    // Fase 6 de ".aero" (0.5.0): AmbientDirection.entries ya no
+    // alcanza para esto — ahora también incluye TOP_TO_BOTTOM
+    // (agregada para AmbientEventType.LEAF), y una burbuja cayendo
+    // no tiene sentido físico ni la lane de más abajo la contempla.
+    // Se listan a mano las 3 direcciones que las burbujas siempre
+    // soportaron, exactamente el mismo conjunto (y las mismas
+    // probabilidades) que daba AmbientDirection.entries.random()
+    // antes de esta fase.
     val direction =
-        AmbientDirection.entries.random()
+        listOf(
+            AmbientDirection.LEFT_TO_RIGHT,
+            AmbientDirection.RIGHT_TO_LEFT,
+            AmbientDirection.BOTTOM_TO_TOP
+        ).random()
 
     val count = Random.nextInt(3, 6)
 
@@ -801,6 +860,71 @@ private fun CoroutineScope.spawnCloudGroup(
                         durationMillis =
                             fixedDurationMs
                                 ?: Random.nextInt(13000, 19000),
+                        easing = LinearEasing
+                    )
+            )
+
+            sprites.remove(sprite)
+        }
+    }
+}
+
+/**
+ * Hojas ([AmbientEventType.LEAF], Fase 6 de ".aero" 0.5.0): grupo de
+ * 2 a 4 (más disperso que el resto — una lluvia de hojas constante
+ * se sentiría demasiado cargada), cada una con su propio carril
+ * horizontal independiente, cayendo de arriba hacia abajo
+ * ([AmbientDirection.TOP_TO_BOTTOM]) con un balanceo lateral
+ * moderado: más marcado que el de las burbujas (que es casi
+ * imperceptible a propósito), pero bastante menos que el serpenteo
+ * notorio de los peces — la idea es que se sienta flotando en el
+ * aire, no cayendo en línea recta ni serpenteando como un pez.
+ */
+private fun CoroutineScope.spawnLeafGroup(
+    sprites: MutableList<ActiveSprite>,
+    fixedDurationMs: Int? = null
+) {
+
+    val count = Random.nextInt(2, 5)
+
+    repeat(count) { index ->
+
+        launch {
+
+            delay(
+                index * Random.nextLong(700L, 1600L)
+            )
+
+            val progress = Animatable(0f)
+
+            val sprite =
+                ActiveSprite(
+                    id = newSpriteId(),
+                    type = AmbientEventType.LEAF,
+                    direction = AmbientDirection.TOP_TO_BOTTOM,
+                    lane = Random.nextFloat() * 0.8f + 0.1f,
+                    progress = progress,
+
+                    wanderAmplitudePx =
+                        Random.nextFloat() * 18f + 18f,
+
+                    wanderFrequency =
+                        Random.nextFloat() * 1.2f + 1.2f,
+
+                    wanderSeed =
+                        Random.nextFloat() * (2f * PI.toFloat())
+                )
+
+            sprites.add(sprite)
+
+            progress.animateTo(
+                targetValue = 1f,
+
+                animationSpec =
+                    tween(
+                        durationMillis =
+                            fixedDurationMs
+                                ?: Random.nextInt(10000, 15000),
                         easing = LinearEasing
                     )
             )

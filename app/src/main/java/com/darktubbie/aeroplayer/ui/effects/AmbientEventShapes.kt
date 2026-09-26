@@ -13,6 +13,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.Text
+import com.darktubbie.aeroplayer.ui.theme.AeroColors
 
 /**
  * Silueta simple de una burbuja en primer plano, para
@@ -20,11 +21,22 @@ import androidx.compose.material3.Text
  * visual (círculo translúcido con reflejo) que las burbujas de
  * [MidgroundLayer], sin ningún asset externo — todo dibujado con
  * Canvas.
+ *
+ * Fase 4 de Dynamic Aero (0.5.0): el cuerpo del degradado sale de
+ * [AeroColors] igual que en [MidgroundLayer], para que se adapte a
+ * Light Aero / Aero Dark; el punto de reflejo se mantiene blanco
+ * puro a propósito (brillo especular, no color de cuerpo).
  */
 @Composable
 fun BubbleFrontShape(
     modifier: Modifier = Modifier
 ) {
+
+    val bodyStart =
+        AeroColors.AmbientBubbleTint.copy(alpha = 0.55f)
+
+    val bodyEnd =
+        AeroColors.AmbientGlowSecondary
 
     Canvas(
         modifier =
@@ -36,8 +48,8 @@ fun BubbleFrontShape(
                 Brush.radialGradient(
                     colors =
                         listOf(
-                            Color.White.copy(alpha = 0.55f),
-                            Color(0x8887E8FF)
+                            bodyStart,
+                            bodyEnd
                         )
                 )
         )
@@ -137,6 +149,23 @@ fun CloudEmoji(
                 fontSize = 40.sp
             ),
 
+        modifier = modifier
+    )
+}
+
+/**
+ * Una hoja, para [AmbientEventType.LEAF] — tipo nuevo de la Fase 6
+ * de ".aero" (0.5.0). Usa el emoji 🍃, mismo patrón que
+ * peces/medusas/nubes: sin silueta dibujada, sin asset propio.
+ */
+@Composable
+fun LeafEmoji(
+    modifier: Modifier = Modifier
+) {
+
+    Text(
+        text = "🍃",
+        style = ambientEmojiStyle,
         modifier = modifier
     )
 }

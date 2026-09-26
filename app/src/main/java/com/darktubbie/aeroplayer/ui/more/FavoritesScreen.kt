@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -30,9 +31,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.darktubbie.aeroplayer.R
 import com.darktubbie.aeroplayer.data.AudioTrack
 import com.darktubbie.aeroplayer.ui.components.AeroBackground
 import com.darktubbie.aeroplayer.ui.components.AlbumArt
@@ -80,16 +81,15 @@ fun FavoritesScreen(
 
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Volver",
+                            contentDescription = stringResource(R.string.cd_back),
                             tint = Color.White
                         )
                     }
 
                     Text(
-                        text = "Favoritos",
+                        text = stringResource(R.string.favorites_title),
                         color = Color.White,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium,
+                        style = MaterialTheme.typography.headlineSmall,
                         modifier = Modifier.padding(start = 4.dp)
                     )
                 }
@@ -100,7 +100,7 @@ fun FavoritesScreen(
 
                         Icon(
                             imageVector = Icons.Default.PlayArrow,
-                            contentDescription = "Reproducir todos",
+                            contentDescription = stringResource(R.string.favorites_play_all),
                             tint = Color.White
                         )
                     }
@@ -120,12 +120,10 @@ fun FavoritesScreen(
                 ) {
 
                     Text(
-                        text =
-                            "Todavía no marcaste ninguna canción " +
-                            "como favorita",
+                        text = stringResource(R.string.favorites_empty),
 
                         color = AeroColors.OnBackgroundSubtitle,
-                        fontSize = 13.sp
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
 
@@ -210,14 +208,14 @@ fun FavoritesScreen(
                                 Text(
                                     text = track.title,
                                     color = AeroColors.TextPrimary,
-                                    fontSize = 14.sp,
+                                    style = MaterialTheme.typography.bodyMedium,
                                     maxLines = 1
                                 )
 
                                 Text(
                                     text = track.artist,
                                     color = AeroColors.TextSecondary,
-                                    fontSize = 12.sp,
+                                    style = MaterialTheme.typography.labelMedium,
                                     maxLines = 1
                                 )
                             }
@@ -234,9 +232,9 @@ fun FavoritesScreen(
 
                                     contentDescription =
                                         if (isPlaying) {
-                                            "Playing"
+                                            stringResource(R.string.cd_playing)
                                         } else {
-                                            "Paused"
+                                            stringResource(R.string.cd_paused)
                                         },
 
                                     tint = AeroColors.Accent
@@ -253,7 +251,7 @@ fun FavoritesScreen(
 
                                 Icon(
                                     imageVector = Icons.Default.Favorite,
-                                    contentDescription = "Quitar de favoritos",
+                                    contentDescription = stringResource(R.string.favorites_remove),
                                     tint = AeroColors.Accent,
                                     modifier = Modifier.size(18.dp)
                                 )

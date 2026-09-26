@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -39,9 +40,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.darktubbie.aeroplayer.R
 import com.darktubbie.aeroplayer.data.AudioTrack
 import com.darktubbie.aeroplayer.data.Playlist
 import com.darktubbie.aeroplayer.ui.components.AeroBackground
@@ -97,7 +99,7 @@ fun PlaylistDetailScreen(
 
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Volver",
+                        contentDescription = stringResource(R.string.cd_back),
                         tint = Color.White
                     )
                 }
@@ -112,21 +114,15 @@ fun PlaylistDetailScreen(
                     Text(
                         text = playlist.name,
                         color = Color.White,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium,
+                        style = MaterialTheme.typography.headlineSmall,
                         maxLines = 1
                     )
 
                     Text(
-                        text =
-                            if (tracks.size == 1) {
-                                "1 canción"
-                            } else {
-                                "${tracks.size} canciones"
-                            },
+                        text = pluralStringResource(R.plurals.song_count, tracks.size, tracks.size),
 
                         color = AeroColors.OnBackgroundSubtitle,
-                        fontSize = 12.sp
+                        style = MaterialTheme.typography.labelMedium,
                     )
                 }
 
@@ -136,7 +132,7 @@ fun PlaylistDetailScreen(
 
                     Icon(
                         imageVector = Icons.Default.Edit,
-                        contentDescription = "Renombrar",
+                        contentDescription = stringResource(R.string.cd_rename),
                         tint = Color.White
                     )
                 }
@@ -145,7 +141,7 @@ fun PlaylistDetailScreen(
 
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = "Agregar canciones",
+                        contentDescription = stringResource(R.string.playlist_add_songs_title),
                         tint = Color.White
                     )
                 }
@@ -156,7 +152,7 @@ fun PlaylistDetailScreen(
 
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Eliminar playlist",
+                        contentDescription = stringResource(R.string.cd_delete_playlist),
                         tint = Color.White
                     )
                 }
@@ -190,10 +186,9 @@ fun PlaylistDetailScreen(
                     Spacer(modifier = Modifier.width(6.dp))
 
                     Text(
-                        text = "Reproducir todas",
+                        text = stringResource(R.string.playlist_play_all),
                         color = AeroColors.Accent,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium
+                        style = MaterialTheme.typography.labelLarge,
                     )
                 }
 
@@ -208,12 +203,10 @@ fun PlaylistDetailScreen(
                 ) {
 
                     Text(
-                        text =
-                            "Esta playlist todavía no tiene " +
-                            "canciones — tocá + para agregar",
+                        text = stringResource(R.string.playlist_empty_detail),
 
                         color = AeroColors.OnBackgroundSubtitle,
-                        fontSize = 13.sp
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
 
@@ -225,7 +218,16 @@ fun PlaylistDetailScreen(
 
                     itemsIndexed(
                         tracks,
-                        key = { _, track -> track.uri }
+
+                        // Fase 6 (0.5.0): clave "índice-uri" en vez de
+                        // solo track.uri — una playlist puede tener la
+                        // misma canción agregada más de una vez (no
+                        // hay nada que lo impida al agregar canciones),
+                        // y con la clave repetida esta LazyColumn
+                        // crasheaba igual que la de Home en la Fase 3
+                        // (mismo IllegalArgumentException de Compose
+                        // por clave duplicada).
+                        key = { index, track -> "$index-${track.uri}" }
 
                     ) { index, track ->
 
@@ -295,14 +297,14 @@ fun PlaylistDetailScreen(
                                 Text(
                                     text = track.title,
                                     color = AeroColors.TextPrimary,
-                                    fontSize = 13.sp,
+                                    style = MaterialTheme.typography.bodySmall,
                                     maxLines = 1
                                 )
 
                                 Text(
                                     text = track.artist,
                                     color = AeroColors.TextSecondary,
-                                    fontSize = 11.sp,
+                                    style = MaterialTheme.typography.labelSmall,
                                     maxLines = 1
                                 )
                             }
@@ -338,7 +340,7 @@ fun PlaylistDetailScreen(
                                     imageVector =
                                         Icons.Default.KeyboardArrowUp,
 
-                                    contentDescription = "Subir",
+                                    contentDescription = stringResource(R.string.cd_move_up),
 
                                     tint =
                                         if (index > 0) {
@@ -366,7 +368,7 @@ fun PlaylistDetailScreen(
                                     imageVector =
                                         Icons.Default.KeyboardArrowDown,
 
-                                    contentDescription = "Bajar",
+                                    contentDescription = stringResource(R.string.cd_move_down),
 
                                     tint =
                                         if (index < tracks.lastIndex) {
@@ -391,7 +393,7 @@ fun PlaylistDetailScreen(
 
                                 Icon(
                                     imageVector = Icons.Default.Close,
-                                    contentDescription = "Quitar de la playlist",
+                                    contentDescription = stringResource(R.string.cd_remove_from_playlist),
                                     tint = AeroColors.TextTertiary,
                                     modifier = Modifier.size(16.dp)
                                 )
@@ -406,7 +408,7 @@ fun PlaylistDetailScreen(
     if (showRenameDialog) {
 
         PlaylistNameDialog(
-            title = "Renombrar playlist",
+            title = stringResource(R.string.playlist_rename_title),
             initialValue = playlist.name,
 
             onConfirm = { name ->
@@ -465,16 +467,15 @@ private fun ConfirmDeletePlaylistDialog(
         ) {
 
             Text(
-                text = "¿Eliminar \"$playlistName\"?",
+                text = stringResource(R.string.playlist_delete_confirm, playlistName),
                 color = AeroColors.TextPrimary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
+                style = MaterialTheme.typography.titleMedium,
             )
 
             Text(
-                text = "Esta acción no se puede deshacer",
+                text = stringResource(R.string.action_undo_warning),
                 color = AeroColors.TextSecondary,
-                fontSize = 13.sp,
+                style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
             )
 
@@ -496,9 +497,9 @@ private fun ConfirmDeletePlaylistDialog(
                 ) {
 
                     Text(
-                        text = "Cancelar",
+                        text = stringResource(R.string.action_cancel),
                         color = AeroColors.TextSecondary,
-                        fontSize = 13.sp
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
 
@@ -515,10 +516,9 @@ private fun ConfirmDeletePlaylistDialog(
                 ) {
 
                     Text(
-                        text = "Eliminar",
+                        text = stringResource(R.string.action_delete),
                         color = Color.White,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium
+                        style = MaterialTheme.typography.labelLarge,
                     )
                 }
             }

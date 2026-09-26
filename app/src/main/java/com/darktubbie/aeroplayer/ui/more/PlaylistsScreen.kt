@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PlaylistPlay
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -35,10 +36,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.darktubbie.aeroplayer.R
 import com.darktubbie.aeroplayer.data.Playlist
 import com.darktubbie.aeroplayer.ui.components.AeroBackground
 import com.darktubbie.aeroplayer.ui.theme.AeroColors
@@ -91,16 +93,15 @@ fun PlaylistsScreen(
 
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Volver",
+                            contentDescription = stringResource(R.string.cd_back),
                             tint = Color.White
                         )
                     }
 
                     Text(
-                        text = "Playlists",
+                        text = stringResource(R.string.playlists_title),
                         color = Color.White,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium,
+                        style = MaterialTheme.typography.headlineSmall,
                         modifier = Modifier.padding(start = 4.dp)
                     )
                 }
@@ -111,7 +112,7 @@ fun PlaylistsScreen(
 
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = "Nueva playlist",
+                        contentDescription = stringResource(R.string.playlist_new),
                         tint = Color.White
                     )
                 }
@@ -127,9 +128,9 @@ fun PlaylistsScreen(
                 ) {
 
                     Text(
-                        text = "Todavía no creaste ninguna playlist",
+                        text = stringResource(R.string.playlists_empty),
                         color = AeroColors.OnBackgroundSubtitle,
-                        fontSize = 13.sp
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
 
@@ -180,20 +181,15 @@ fun PlaylistsScreen(
                                 Text(
                                     text = playlist.name,
                                     color = AeroColors.TextPrimary,
-                                    fontSize = 15.sp,
+                                    style = MaterialTheme.typography.bodyLarge,
                                     maxLines = 1
                                 )
 
                                 Text(
-                                    text =
-                                        if (count == 1) {
-                                            "1 canción"
-                                        } else {
-                                            "$count canciones"
-                                        },
+                                    text = pluralStringResource(R.plurals.song_count, count, count),
 
                                     color = AeroColors.TextTertiary,
-                                    fontSize = 12.sp
+                                    style = MaterialTheme.typography.labelMedium,
                                 )
                             }
 
@@ -207,7 +203,7 @@ fun PlaylistsScreen(
 
                                 Icon(
                                     imageVector = Icons.Default.Delete,
-                                    contentDescription = "Eliminar playlist",
+                                    contentDescription = stringResource(R.string.cd_delete_playlist),
                                     tint = AeroColors.TextTertiary,
                                     modifier = Modifier.size(18.dp)
                                 )
@@ -222,7 +218,7 @@ fun PlaylistsScreen(
     if (showCreateDialog) {
 
         PlaylistNameDialog(
-            title = "Nueva playlist",
+            title = stringResource(R.string.playlist_new),
             initialValue = "",
 
             onConfirm = { name ->
@@ -284,15 +280,14 @@ fun PlaylistNameDialog(
                 Text(
                     text = title,
                     color = AeroColors.TextPrimary,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
+                    style = MaterialTheme.typography.titleMedium,
                 )
 
                 IconButton(onClick = onDismiss) {
 
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Cerrar",
+                        contentDescription = stringResource(R.string.cd_close),
                         tint = AeroColors.TextSecondary
                     )
                 }
@@ -318,10 +313,17 @@ fun PlaylistNameDialog(
                     singleLine = true,
 
                     textStyle =
-                        TextStyle(
-                            color = AeroColors.TextPrimary,
-                            fontSize = 14.sp
+                        MaterialTheme.typography.bodyMedium.copy(
+                            color = AeroColors.TextPrimary
                         ),
+
+                    // Fase 7 (Aero Dark UI refinement, 0.5.0): sin
+                    // esto el cursor quedaba en el negro por defecto
+                    // de BasicTextField — invisible sobre el vidrio
+                    // oscuro de Aero Dark. Mismo color que ya usa el
+                    // cursor de búsqueda de LibraryScreen.
+                    cursorBrush =
+                        SolidColor(AeroColors.Accent),
 
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -350,10 +352,9 @@ fun PlaylistNameDialog(
             ) {
 
                 Text(
-                    text = "Guardar",
+                    text = stringResource(R.string.action_save),
                     color = Color.White,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
+                    style = MaterialTheme.typography.labelLarge,
                 )
             }
         }

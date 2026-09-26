@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,7 +25,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.darktubbie.aeroplayer.R
 import com.darktubbie.aeroplayer.ui.theme.AeroColors
 
 /**
@@ -70,35 +72,35 @@ fun BottomNavBar(
 
         NavItem(
             icon = Icons.Default.Home,
-            label = "Inicio",
+            label = stringResource(R.string.nav_home),
             selected = current == AppDestination.INICIO,
             onClick = { onSelect(AppDestination.INICIO) }
         )
 
         NavItem(
             icon = Icons.Default.MusicNote,
-            label = "Música",
+            label = stringResource(R.string.nav_music),
             selected = current == AppDestination.MUSICA,
             onClick = { onSelect(AppDestination.MUSICA) }
         )
 
         NavItem(
             icon = Icons.Default.Album,
-            label = "Álbumes",
+            label = stringResource(R.string.nav_albums),
             selected = current == AppDestination.ALBUMES,
             onClick = { onSelect(AppDestination.ALBUMES) }
         )
 
         NavItem(
             icon = Icons.Default.PlayCircle,
-            label = "Reproductor",
+            label = stringResource(R.string.nav_player),
             selected = current == AppDestination.REPRODUCTOR,
             onClick = { onSelect(AppDestination.REPRODUCTOR) }
         )
 
         NavItem(
             icon = Icons.Default.MoreHoriz,
-            label = "Más",
+            label = stringResource(R.string.nav_more),
             selected = current == AppDestination.MAS,
             onClick = { onSelect(AppDestination.MAS) }
         )
@@ -139,7 +141,7 @@ private fun NavItem(
         Text(
             text = label,
             color = tint,
-            fontSize = 11.sp
+            style = MaterialTheme.typography.labelSmall,
         )
     }
 }

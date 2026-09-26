@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
@@ -43,9 +44,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.darktubbie.aeroplayer.R
 import androidx.media3.common.Player
 import com.darktubbie.aeroplayer.data.AudioTrack
 import com.darktubbie.aeroplayer.playback.SleepTimerState
@@ -136,18 +138,18 @@ fun NowPlayingScreen(
                             Icons.Default.ArrowBack,
 
                         contentDescription =
-                            "Back to library",
+                            stringResource(R.string.cd_back),
 
                         tint = Color.White
                     )
                 }
 
                 Text(
-                    text = "Now Playing",
+                    text = stringResource(R.string.now_playing_title),
 
                     color = Color.White,
 
-                    fontSize = 18.sp
+                    style = MaterialTheme.typography.titleLarge,
                 )
 
                 Spacer(
@@ -169,9 +171,9 @@ fun NowPlayingScreen(
 
                         contentDescription =
                             if (isFavorite) {
-                                "Quitar de favoritos"
+                                stringResource(R.string.favorites_remove)
                             } else {
-                                "Agregar a favoritos"
+                                stringResource(R.string.cd_favorite_add)
                             },
 
                         tint =
@@ -189,7 +191,7 @@ fun NowPlayingScreen(
 
                     Icon(
                         imageVector = Icons.Default.PlaylistAdd,
-                        contentDescription = "Agregar a playlist",
+                        contentDescription = stringResource(R.string.playlist_add_to),
                         tint = Color.White
                     )
                 }
@@ -204,9 +206,9 @@ fun NowPlayingScreen(
 
                         contentDescription =
                             if (sleepTimerState.isActive) {
-                                "Sleep Timer activo"
+                                stringResource(R.string.cd_sleep_timer_active)
                             } else {
-                                "Sleep Timer"
+                                stringResource(R.string.sleep_timer_title)
                             },
 
                         tint =
@@ -227,7 +229,7 @@ fun NowPlayingScreen(
                             Icons.Default.Edit,
 
                         contentDescription =
-                            "Editar efectos (.aero)",
+                            stringResource(R.string.cd_edit_effects),
 
                         tint = Color.White
                     )
@@ -252,6 +254,7 @@ fun NowPlayingScreen(
                     artist = track.artist,
                     album = track.album,
                     highRes = true,
+                    animateChanges = true,
 
                     modifier =
                         Modifier
@@ -272,7 +275,7 @@ fun NowPlayingScreen(
 
                 color = AeroColors.TextPrimary,
 
-                fontSize = 22.sp,
+                style = MaterialTheme.typography.headlineMedium,
 
                 maxLines = 1,
 
@@ -289,7 +292,7 @@ fun NowPlayingScreen(
 
                 color = AeroColors.TextSecondary,
 
-                fontSize = 15.sp,
+                style = MaterialTheme.typography.bodyLarge,
 
                 maxLines = 1,
 
@@ -371,7 +374,7 @@ fun NowPlayingScreen(
 
                     color = AeroColors.TextSecondary,
 
-                    fontSize = 12.sp
+                    style = MaterialTheme.typography.labelMedium,
                 )
 
                 Text(
@@ -379,7 +382,7 @@ fun NowPlayingScreen(
 
                     color = AeroColors.TextSecondary,
 
-                    fontSize = 12.sp
+                    style = MaterialTheme.typography.labelMedium,
                 )
             }
 
@@ -408,7 +411,7 @@ fun NowPlayingScreen(
                             Icons.Default.Shuffle,
 
                         contentDescription =
-                            "Shuffle",
+                            stringResource(R.string.cd_shuffle),
 
                         tint =
                             if (shuffleEnabled) {
@@ -428,7 +431,7 @@ fun NowPlayingScreen(
                             Icons.Default.SkipPrevious,
 
                         contentDescription =
-                            "Previous",
+                            stringResource(R.string.cd_previous),
 
                         tint = AeroColors.TextPrimary,
 
@@ -473,9 +476,9 @@ fun NowPlayingScreen(
 
                             contentDescription =
                                 if (isPlaying) {
-                                    "Pause"
+                                    stringResource(R.string.cd_pause_action)
                                 } else {
-                                    "Play"
+                                    stringResource(R.string.cd_play_action)
                                 },
 
                             tint = AeroColors.Accent,
@@ -495,7 +498,7 @@ fun NowPlayingScreen(
                             Icons.Default.SkipNext,
 
                         contentDescription =
-                            "Next",
+                            stringResource(R.string.cd_next),
 
                         tint = AeroColors.TextPrimary,
 
@@ -520,7 +523,7 @@ fun NowPlayingScreen(
                             },
 
                         contentDescription =
-                            "Repeat",
+                            stringResource(R.string.cd_repeat),
 
                         tint =
                             if (
@@ -582,15 +585,15 @@ fun EmptyNowPlayingPlaceholder() {
         ) {
 
             Text(
-                text = "Nada sonando todavía",
+                text = stringResource(R.string.now_playing_empty_title),
                 color = Color.White,
-                fontSize = 18.sp
+                style = MaterialTheme.typography.titleLarge,
             )
 
             Text(
-                text = "Elige una canción desde Música o Álbumes.",
+                text = stringResource(R.string.now_playing_empty_hint),
                 color = AeroColors.OnBackgroundSubtitle,
-                fontSize = 13.sp,
+                style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(top = 6.dp)
             )
         }

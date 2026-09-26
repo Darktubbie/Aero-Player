@@ -1,20 +1,26 @@
 package com.darktubbie.aeroplayer
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
+import java.util.Locale
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.view.WindowCompat
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,8 +34,13 @@ import com.darktubbie.aeroplayer.ui.components.MiniPlayer
 import com.darktubbie.aeroplayer.ui.effects.AmbientPlaybackInfo
 import com.darktubbie.aeroplayer.ui.effects.LocalAmbientIntensity
 import com.darktubbie.aeroplayer.ui.effects.LocalAmbientPlayback
+import androidx.compose.material3.MaterialTheme
+import com.darktubbie.aeroplayer.ui.theme.AeroTypography
+import com.darktubbie.aeroplayer.ui.theme.AeroColors
+import com.darktubbie.aeroplayer.ui.theme.AppTheme
 import com.darktubbie.aeroplayer.ui.theme.LocalAeroColorScheme
 import com.darktubbie.aeroplayer.ui.theme.colorScheme
+import com.darktubbie.aeroplayer.ui.theme.materialColorScheme
 import com.darktubbie.aeroplayer.ui.home.HomeScreen
 import com.darktubbie.aeroplayer.ui.library.LibraryScreen
 import com.darktubbie.aeroplayer.ui.library.LibraryTab
@@ -71,6 +82,43 @@ import com.darktubbie.aeroplayer.ui.nowplaying.SleepTimerSheet
 class MainActivity : ComponentActivity() {
 
     private val viewModel: MainViewModel by viewModels()
+
+    /**
+     * Fase 2 (0.5.0) — sistema de idiomas: envuelve el Context base
+     * con una [Configuration] que fija el idioma elegido por el
+     * usuario (persistido en [SettingsRepository], leído acá
+     * directamente porque esto corre antes de que exista el
+     * ViewModel). Por defecto "es", explícito — la app NO sigue el
+     * idioma del sistema, para que el idioma mostrado sea siempre
+     * el que el usuario eligió en Ajustes, no una sorpresa según el
+     * teléfono en el que corra.
+     *
+     * `createConfigurationContext` hace que cualquier recurso
+     * resuelto a través de esta Activity (y por lo tanto todo
+     * `stringResource()`/`pluralStringResource()` de Compose, que
+     * lee del `Context` de la Activity) salga de `res/values-en` o
+     * `res/values` según corresponda, sin depender de
+     * AppCompatDelegate ni de convertir la Activity en
+     * AppCompatActivity.
+     */
+    override fun attachBaseContext(newBase: Context) {
+
+        val languageCode =
+            newBase.getSharedPreferences(
+                "aero_player",
+                Context.MODE_PRIVATE
+            ).getString("app_language", null) ?: "es"
+
+        val locale = Locale(languageCode)
+        Locale.setDefault(locale)
+
+        val config = Configuration(newBase.resources.configuration)
+        config.setLocale(locale)
+
+        super.attachBaseContext(
+            newBase.createConfigurationContext(config)
+        )
+    }
 
     private val folderPicker =
         registerForActivityResult(
@@ -144,6 +192,13 @@ class MainActivity : ComponentActivity() {
         }
 
         enableEdgeToEdge()
+
+        // Fase 7 (Aero Dark UI refinement, 0.5.0): se captura acá
+        // (todavía dentro de onCreate, con acceso directo a `window`
+        // vía `this`) para poder referenciarlo más abajo dentro del
+        // lambda de setContent, que no tiene la Activity como
+        // receptor implícito.
+        val activityWindow = window
 
         setContent {
 
@@ -278,6 +333,37 @@ class MainActivity : ComponentActivity() {
             val appTheme by
                 viewModel.appTheme
 
+            // Fase 7 (Aero Dark UI refinement, 0.5.0): antes las
+            // barras del sistema (navegación/status) tenían un color
+            // blanco fijo en styles.xml sin importar el tema Aero
+            // elegido — la causa concreta de la franja blanca que
+            // quedaba abajo de todo con Aero Dark seleccionado, ya
+            // que esa franja no es parte del contenido de Compose,
+            // es la barra del sistema operativo. Se controla acá en
+            // cada cambio de tema en vez de en el XML estático:
+            // transparente en ambos (deja ver el contenido de Compose
+            // detrás) y con iconos claros u oscuros según corresponda.
+            LaunchedEffect(appTheme) {
+
+                val insetsController =
+                    WindowCompat.getInsetsController(
+                        activityWindow,
+                        activityWindow.decorView
+                    )
+
+                val isLightTheme =
+                    appTheme == AppTheme.LIGHT_AERO
+
+                insetsController.isAppearanceLightStatusBars =
+                    isLightTheme
+
+                insetsController.isAppearanceLightNavigationBars =
+                    isLightTheme
+            }
+
+            val appLanguage by
+                viewModel.appLanguage
+
             /*
              * LibraryScreen es una sola función que ya sabe
              * mostrar Songs/Albums/Artists según libraryTab (sus
@@ -364,12 +450,19 @@ class MainActivity : ComponentActivity() {
              * (Inicio, Más, etc.) tenga que recibir y reenviar esos
              * datos manualmente. Se provee una sola vez aquí.
              */
+            MaterialTheme(
+                typography = AeroTypography,
+                colorScheme = appTheme.materialColorScheme()
+            ) {
+
             CompositionLocalProvider(
                 LocalAmbientPlayback provides
                     AmbientPlaybackInfo(
                         isPlaying = isPlaying,
                         trackPath = currentTrack?.path,
                         apeVersion = apeVersion,
+                        trackArtist = currentTrack?.artist ?: "",
+                        trackAlbum = currentTrack?.album ?: "",
 
                         getPositionMs = {
                             viewModel.currentPositionMs()
@@ -383,7 +476,25 @@ class MainActivity : ComponentActivity() {
 
             Box(
                 modifier =
-                    Modifier.fillMaxSize()
+                    Modifier
+                        .fillMaxSize()
+                        // Fase 7 (Aero Dark UI refinement, 0.5.0):
+                        // segunda mitad del fix de la franja
+                        // inferior blanca — esta es la raíz visual de
+                        // TODA la pantalla (contenido + MiniPlayer +
+                        // BottomNavBar), y antes no pintaba nada
+                        // detrás suyo, dejando ver el fondo blanco
+                        // por defecto de la ventana de Android
+                        // (heredado de Theme.Material.Light) en
+                        // cualquier hueco — el margen alrededor de la
+                        // barra de navegación flotante y el área de
+                        // gestos del sistema en la parte de abajo,
+                        // sobre todo. Con esto, ese hueco SIEMPRE
+                        // tiene un color acorde al tema, sin importar
+                        // qué pase con las barras del sistema.
+                        .background(
+                            AeroColors.BackgroundGradient.last()
+                        )
             ) {
 
             Column(
@@ -401,7 +512,96 @@ class MainActivity : ComponentActivity() {
                     when (destination) {
 
                         AppDestination.INICIO -> {
-                            HomeScreen()
+
+                            val homePositionMs by
+                                viewModel.positionMs
+
+                            val homeDurationMs by
+                                viewModel.durationMs
+
+                            val aeroPicks by
+                                viewModel.aeroPicks
+
+                            HomeScreen(
+                                currentTrack = currentTrack,
+                                isPlaying = isPlaying,
+                                positionMs = homePositionMs,
+                                durationMs = homeDurationMs,
+                                recentlyPlayed = historyTracks.map { it.first },
+                                favoriteTracks = favoriteTracks,
+                                playlists = playlists,
+
+                                playlistTrackCount = { playlist ->
+                                    viewModel.tracksInPlaylist(playlist).size
+                                },
+
+                                aeroPicks = aeroPicks,
+
+                                onContinueListeningClick = {
+                                    navigateTo(AppDestination.REPRODUCTOR)
+                                },
+
+                                onContinueListeningPlayPause = {
+                                    viewModel.togglePlayPause()
+                                },
+
+                                onRecentlyPlayedClick = { track ->
+                                    viewModel.playFromHistory(track)
+                                },
+
+                                onViewAllRecentlyPlayed = {
+                                    historyScreenOpen = true
+                                },
+
+                                onFavoriteClick = { track ->
+
+                                    if (track.uri == currentTrackUri) {
+                                        viewModel.togglePlayPause()
+                                    } else {
+                                        viewModel.playFavorites(track)
+                                    }
+                                },
+
+                                onViewAllFavorites = {
+                                    favoritesScreenOpen = true
+                                },
+
+                                onPlaylistClick = { playlist ->
+                                    playlistsScreenOpen = true
+                                    openPlaylistId = playlist.id
+                                },
+
+                                onViewAllPlaylists = {
+                                    playlistsScreenOpen = true
+                                },
+
+                                onAeroPickClick = { track ->
+                                    viewModel.playFromAeroPicks(track)
+                                },
+
+                                onOpenLibrary = {
+                                    viewModel.onLibraryTabSelected(
+                                        LibraryTab.SONGS
+                                    )
+                                    navigateTo(AppDestination.MUSICA)
+                                },
+
+                                onOpenFavorites = {
+                                    favoritesScreenOpen = true
+                                },
+
+                                onOpenPlaylists = {
+                                    playlistsScreenOpen = true
+                                },
+
+                                onOpenFolders = {
+                                    foldersScreenOpen = true
+                                },
+
+                                onOpenSettings = {
+                                    settingsScreenOpen = true
+                                }
+                            )
                         }
 
                         AppDestination.MUSICA -> {
@@ -684,6 +884,13 @@ class MainActivity : ComponentActivity() {
                         viewModel.setAppTheme(theme)
                     },
 
+                    appLanguage = appLanguage,
+
+                    onAppLanguageChange = { code ->
+                        viewModel.setLanguage(code)
+                        recreate()
+                    },
+
                     onOpenFolders = {
                         settingsScreenOpen = false
                         foldersScreenOpen = true
@@ -905,6 +1112,7 @@ class MainActivity : ComponentActivity() {
                         historyScreenOpen = false
                     }
                 )
+            }
             }
             }
             }

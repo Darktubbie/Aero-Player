@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -28,9 +29,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.darktubbie.aeroplayer.R
 import com.darktubbie.aeroplayer.ui.components.AeroBackground
 import com.darktubbie.aeroplayer.ui.theme.AeroColors
 
@@ -69,16 +70,15 @@ fun FoldersScreen(
 
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Volver",
+                        contentDescription = stringResource(R.string.cd_back),
                         tint = Color.White
                     )
                 }
 
                 Text(
-                    text = "Carpetas",
+                    text = stringResource(R.string.folders_title),
                     color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Medium,
+                    style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.padding(start = 4.dp)
                 )
             }
@@ -88,9 +88,9 @@ fun FoldersScreen(
             if (selectedFolders.isEmpty()) {
 
                 Text(
-                    text = "No hay ninguna carpeta agregada todavía.",
+                    text = stringResource(R.string.folders_empty),
                     color = AeroColors.TextSecondary,
-                    fontSize = 13.sp
+                    style = MaterialTheme.typography.bodySmall,
                 )
 
             } else {
@@ -126,10 +126,9 @@ fun FoldersScreen(
             ) {
 
                 Text(
-                    text = "Agregar carpeta",
+                    text = stringResource(R.string.folders_add),
                     color = Color.White,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
+                    style = MaterialTheme.typography.labelLarge,
                 )
             }
         }
@@ -168,7 +167,7 @@ private fun FolderRow(
             Text(
                 text = displayName(folder),
                 color = AeroColors.TextPrimary,
-                fontSize = 14.sp,
+                style = MaterialTheme.typography.bodyMedium,
                 maxLines = 1,
                 modifier = Modifier.padding(start = 10.dp)
             )
@@ -178,7 +177,7 @@ private fun FolderRow(
 
             Icon(
                 imageVector = Icons.Default.Close,
-                contentDescription = "Quitar carpeta",
+                contentDescription = stringResource(R.string.folders_remove),
                 tint = AeroColors.TextSecondary
             )
         }
@@ -191,7 +190,11 @@ private fun FolderRow(
  * muestra solo la parte después de los dos puntos, que suele ser el
  * nombre/ruta relativa real de la carpeta.
  */
+@Composable
 private fun displayName(folder: String): String {
+
+    val internalStorageLabel =
+        stringResource(R.string.folder_internal_storage)
 
     return try {
 
@@ -204,7 +207,7 @@ private fun displayName(folder: String): String {
 
         if (documentId != null && colonIndex != -1) {
             documentId.substring(colonIndex + 1)
-                .ifBlank { "Almacenamiento interno" }
+                .ifBlank { internalStorageLabel }
         } else {
             documentId ?: folder
         }

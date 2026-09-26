@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -31,9 +32,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.darktubbie.aeroplayer.R
 import com.darktubbie.aeroplayer.data.AudioTrack
 import com.darktubbie.aeroplayer.ui.components.AeroBackground
 import com.darktubbie.aeroplayer.ui.components.AlbumArt
@@ -95,16 +96,15 @@ fun HistoryScreen(
 
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Volver",
+                            contentDescription = stringResource(R.string.cd_back),
                             tint = Color.White
                         )
                     }
 
                     Text(
-                        text = "Historial",
+                        text = stringResource(R.string.history_title),
                         color = Color.White,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium,
+                        style = MaterialTheme.typography.headlineSmall,
                         modifier = Modifier.padding(start = 4.dp)
                     )
                 }
@@ -117,7 +117,7 @@ fun HistoryScreen(
 
                         Icon(
                             imageVector = Icons.Default.DeleteSweep,
-                            contentDescription = "Limpiar historial",
+                            contentDescription = stringResource(R.string.history_clear_cd),
                             tint = Color.White
                         )
                     }
@@ -134,9 +134,9 @@ fun HistoryScreen(
                 ) {
 
                     Text(
-                        text = "Todavía no escuchaste ninguna canción",
+                        text = stringResource(R.string.history_empty),
                         color = AeroColors.OnBackgroundSubtitle,
-                        fontSize = 13.sp
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
 
@@ -191,14 +191,14 @@ fun HistoryScreen(
                                 Text(
                                     text = track.title,
                                     color = AeroColors.TextPrimary,
-                                    fontSize = 14.sp,
+                                    style = MaterialTheme.typography.bodyMedium,
                                     maxLines = 1
                                 )
 
                                 Text(
                                     text = track.artist,
                                     color = AeroColors.TextSecondary,
-                                    fontSize = 12.sp,
+                                    style = MaterialTheme.typography.labelMedium,
                                     maxLines = 1
                                 )
                             }
@@ -210,7 +210,7 @@ fun HistoryScreen(
                                     ),
 
                                 color = AeroColors.TextTertiary,
-                                fontSize = 11.sp
+                                style = MaterialTheme.typography.labelSmall,
                             )
                         }
                     }
@@ -261,16 +261,15 @@ private fun ConfirmClearHistoryDialog(
         ) {
 
             Text(
-                text = "¿Limpiar todo el historial?",
+                text = stringResource(R.string.history_clear_confirm_title),
                 color = AeroColors.TextPrimary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
+                style = MaterialTheme.typography.titleMedium,
             )
 
             Text(
-                text = "Esta acción no se puede deshacer",
+                text = stringResource(R.string.action_undo_warning),
                 color = AeroColors.TextSecondary,
-                fontSize = 13.sp,
+                style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
             )
 
@@ -292,9 +291,9 @@ private fun ConfirmClearHistoryDialog(
                 ) {
 
                     Text(
-                        text = "Cancelar",
+                        text = stringResource(R.string.action_cancel),
                         color = AeroColors.TextSecondary,
-                        fontSize = 13.sp
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
 
@@ -311,10 +310,9 @@ private fun ConfirmClearHistoryDialog(
                 ) {
 
                     Text(
-                        text = "Limpiar",
+                        text = stringResource(R.string.history_clear),
                         color = Color.White,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium
+                        style = MaterialTheme.typography.labelLarge,
                     )
                 }
             }

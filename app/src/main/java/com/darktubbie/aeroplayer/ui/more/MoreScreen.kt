@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,8 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.darktubbie.aeroplayer.R
 import com.darktubbie.aeroplayer.ui.components.AeroBackground
 import com.darktubbie.aeroplayer.ui.theme.AeroColors
 
@@ -61,41 +63,41 @@ fun MoreScreen(
         ) {
 
             Text(
-                text = "Más",
-                fontSize = 30.sp,
+                text = stringResource(R.string.more_title),
+                style = MaterialTheme.typography.headlineLarge,
                 color = Color.White
             )
 
             Text(
-                text = "Herramientas y ajustes de Aero Player",
-                fontSize = 14.sp,
+                text = stringResource(R.string.more_subtitle),
+                style = MaterialTheme.typography.bodyMedium,
                 color = AeroColors.OnBackgroundSubtitle,
                 modifier = Modifier.padding(bottom = 18.dp)
             )
 
             MoreRow(
                 icon = Icons.Default.Star,
-                title = "Favoritos",
+                title = stringResource(R.string.favorites_title),
                 onClick = onOpenFavorites
             )
 
-            MoreRow(icon = Icons.Default.PlaylistPlay, title = "Playlists", onClick = onOpenPlaylists)
+            MoreRow(icon = Icons.Default.PlaylistPlay, title = stringResource(R.string.playlists_title), onClick = onOpenPlaylists)
 
             MoreRow(
                 icon = Icons.Default.History,
-                title = "Historial",
+                title = stringResource(R.string.history_title),
                 onClick = onOpenHistory
             )
 
             MoreRow(
                 icon = Icons.Default.Folder,
-                title = "Carpetas",
+                title = stringResource(R.string.folders_title),
                 onClick = onOpenFolders
             )
 
             MoreRow(
                 icon = Icons.Default.Settings,
-                title = "Ajustes",
+                title = stringResource(R.string.settings_title),
                 onClick = onOpenSettings
             )
         }
@@ -155,15 +157,15 @@ private fun MoreRow(
             Text(
                 text = title,
                 color = AeroColors.TextPrimary,
-                fontSize = 15.sp,
+                style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(start = 12.dp)
             )
         }
 
         Text(
-            text = if (onClick != null) "" else "Próximamente",
+            text = if (onClick != null) "" else stringResource(R.string.more_coming_soon),
             color = AeroColors.TextTertiary,
-            fontSize = 12.sp
+            style = MaterialTheme.typography.labelMedium,
         )
     }
 }

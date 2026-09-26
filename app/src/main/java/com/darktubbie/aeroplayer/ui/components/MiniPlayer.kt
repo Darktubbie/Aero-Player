@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -22,8 +23,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.darktubbie.aeroplayer.R
 import com.darktubbie.aeroplayer.data.AudioTrack
 import com.darktubbie.aeroplayer.ui.theme.AeroColors
 
@@ -91,6 +93,9 @@ fun MiniPlayer(
             album =
                 track.album,
 
+            animateChanges =
+                true,
+
             modifier =
                 Modifier
                     .size(42.dp)
@@ -116,8 +121,7 @@ fun MiniPlayer(
                 color =
                     AeroColors.TextPrimary,
 
-                fontSize =
-                    14.sp,
+                style = MaterialTheme.typography.bodyMedium,
 
                 maxLines = 1
             )
@@ -129,8 +133,7 @@ fun MiniPlayer(
                 color =
                     AeroColors.TextSecondary,
 
-                fontSize =
-                    12.sp,
+                style = MaterialTheme.typography.labelMedium,
 
                 maxLines = 1
             )
@@ -151,9 +154,9 @@ fun MiniPlayer(
 
                 contentDescription =
                     if (isPlaying) {
-                        "Pause"
+                        stringResource(R.string.cd_pause_action)
                     } else {
-                        "Play"
+                        stringResource(R.string.cd_play_action)
                     },
 
                 tint =

@@ -30,12 +30,22 @@ import androidx.compose.runtime.compositionLocalOf
  * [trackPath], que no cambia solo porque el archivo en disco haya
  * cambiado). `MainActivity` lo incrementa cada vez que el editor
  * guarda con éxito.
+ *
+ * [trackArtist]/[trackAlbum] (Fase 5 de la Experiencia de Artwork,
+ * 0.5.0): agregados para que [MidgroundLayer] pueda resolver la
+ * portada de la canción actual vía [com.darktubbie.aeroplayer.AlbumArtCache]
+ * (que identifica portadas por artista+álbum, no por [trackPath]
+ * solo) y tintar sutilmente el fondo ambiental con su color
+ * dominante. Cadena vacía por defecto, igual de inofensivo que
+ * [trackPath] en `null`.
  */
 data class AmbientPlaybackInfo(
     val isPlaying: Boolean,
     val trackPath: String?,
     val getPositionMs: () -> Long,
-    val apeVersion: Int = 0
+    val apeVersion: Int = 0,
+    val trackArtist: String = "",
+    val trackAlbum: String = ""
 )
 
 val LocalAmbientPlayback =

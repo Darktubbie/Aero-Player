@@ -16,10 +16,17 @@ package com.darktubbie.aeroplayer.ui.effects
  * [JELLYFISH]: siempre sube ([AmbientDirection.BOTTOM_TO_TOP]).
  *
  * [CLOUD]: siempre sube ([AmbientDirection.BOTTOM_TO_TOP]).
+ *
+ * [LEAF]: tipo nuevo de la Fase 6 de ".aero" (0.5.0) — siempre cae
+ * ([AmbientDirection.TOP_TO_BOTTOM]), con un balanceo lateral
+ * moderado (menos sutil que las burbujas, menos marcado que el
+ * serpenteo de los peces) para sentirse flotando en el aire en vez
+ * de caer en línea recta.
  */
 enum class AmbientEventType {
     BUBBLE_FRONT,
     FISH,
     JELLYFISH,
-    CLOUD
+    CLOUD,
+    LEAF
 }

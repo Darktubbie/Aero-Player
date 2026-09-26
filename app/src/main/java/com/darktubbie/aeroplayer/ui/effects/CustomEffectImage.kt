@@ -127,20 +127,3 @@ fun CustomOrBuiltInEffect(
         builtIn()
     }
 }
-
-/**
- * Clave de texto de un [AmbientEventType], la misma que ya usa el
- * formato `.ape` ("bubble", "fish", "jellyfish", "cloud") — para que
- * los recursos personalizados y los eventos de `.ape` compartan el
- * mismo vocabulario de nombres de efecto.
- */
-fun ambientEventTypeKey(
-    type: AmbientEventType
-): String =
-
-    when (type) {
-        AmbientEventType.BUBBLE_FRONT -> "bubble"
-        AmbientEventType.FISH -> "fish"
-        AmbientEventType.JELLYFISH -> "jellyfish"
-        AmbientEventType.CLOUD -> "cloud"
-    }
