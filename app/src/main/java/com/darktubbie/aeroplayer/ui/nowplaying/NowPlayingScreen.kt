@@ -1,6 +1,13 @@
 package com.darktubbie.aeroplayer.ui.nowplaying
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,6 +26,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PlaylistAdd
@@ -52,6 +60,7 @@ import androidx.media3.common.Player
 import com.darktubbie.aeroplayer.data.AudioTrack
 import com.darktubbie.aeroplayer.playback.SleepTimerState
 import com.darktubbie.aeroplayer.ui.components.AeroBackground
+import com.darktubbie.aeroplayer.ui.effects.aeroPressScale
 import com.darktubbie.aeroplayer.ui.components.AlbumArt
 import com.darktubbie.aeroplayer.ui.theme.AeroColors
 import kotlinx.coroutines.delay
@@ -85,7 +94,13 @@ fun NowPlayingScreen(
     onToggleFavorite: () -> Unit,
     onAddToPlaylist: () -> Unit,
     sleepTimerState: SleepTimerState,
-    onOpenSleepTimer: () -> Unit
+    onOpenSleepTimer: () -> Unit,
+    // Fase 8 (0.6.0): Playback Queue asociada a este reproductor.
+    queueItems: List<QueueItem>,
+    currentQueueIndex: Int,
+    onPlayQueueItem: (Int) -> Unit,
+    onRemoveQueueItem: (Int) -> Unit,
+    onMoveQueueItem: (Int, Int) -> Unit
 ) {
 
     /*
@@ -111,6 +126,22 @@ fun NowPlayingScreen(
     var dragValue by remember {
         mutableStateOf(0f)
     }
+
+    // Now Playing -> ^ -> Playback Queue -> v -> Now Playing.
+    // La Queue es una capa de ESTA pantalla (no un destino de
+    // navegación): así Now Playing conserva su estado y su sondeo
+    // de posición mientras la cola está abierta.
+    var queueOpen by remember {
+        mutableStateOf(false)
+    }
+
+    BackHandler(enabled = queueOpen) {
+        queueOpen = false
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
 
     AeroBackground {
 
@@ -403,7 +434,8 @@ fun NowPlayingScreen(
             ) {
 
                 IconButton(
-                    onClick = onToggleShuffle
+                    onClick = onToggleShuffle,
+                    modifier = Modifier.aeroPressScale()
                 ) {
 
                     Icon(
@@ -423,7 +455,8 @@ fun NowPlayingScreen(
                 }
 
                 IconButton(
-                    onClick = onPrevious
+                    onClick = onPrevious,
+                    modifier = Modifier.aeroPressScale()
                 ) {
 
                     Icon(
@@ -444,6 +477,7 @@ fun NowPlayingScreen(
                     modifier =
                         Modifier
                             .size(64.dp)
+                            .aeroPressScale(pressedScale = 0.90f)
                             .clip(CircleShape)
                             .background(
                                 AeroColors.GlassSurfaceBase.copy(
@@ -490,7 +524,8 @@ fun NowPlayingScreen(
                 }
 
                 IconButton(
-                    onClick = onNext
+                    onClick = onNext,
+                    modifier = Modifier.aeroPressScale()
                 ) {
 
                     Icon(
@@ -508,7 +543,8 @@ fun NowPlayingScreen(
                 }
 
                 IconButton(
-                    onClick = onCycleRepeat
+                    onClick = onCycleRepeat,
+                    modifier = Modifier.aeroPressScale()
                 ) {
 
                     Icon(
@@ -537,7 +573,58 @@ fun NowPlayingScreen(
                     )
                 }
             }
+
+            Spacer(
+                modifier = Modifier.weight(1f)
+            )
+
+            // "^" inferior: abre la Playback Queue.
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable { queueOpen = true }
+                        .padding(vertical = 8.dp),
+
+                contentAlignment =
+                    Alignment.Center
+            ) {
+
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowUp,
+                    contentDescription =
+                        stringResource(R.string.cd_open_queue),
+                    tint = AeroColors.TextSecondary,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
         }
+    }
+
+    AnimatedVisibility(
+        visible = queueOpen,
+        enter =
+            slideInVertically(initialOffsetY = { it }) +
+                fadeIn(),
+        exit =
+            slideOutVertically(targetOffsetY = { it }) +
+                fadeOut()
+    ) {
+
+        PlaybackQueueScreen(
+            items = queueItems,
+            currentIndex = currentQueueIndex,
+            shuffleEnabled = shuffleEnabled,
+            repeatMode = repeatMode,
+            onClose = { queueOpen = false },
+            onPlayItem = onPlayQueueItem,
+            onRemoveItem = onRemoveQueueItem,
+            onMoveItem = onMoveQueueItem,
+            onToggleShuffle = onToggleShuffle,
+            onCycleRepeat = onCycleRepeat
+        )
+    }
+
     }
 }
 

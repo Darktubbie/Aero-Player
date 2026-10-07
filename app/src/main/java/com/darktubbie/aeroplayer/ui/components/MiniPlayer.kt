@@ -3,6 +3,7 @@ package com.darktubbie.aeroplayer.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import com.darktubbie.aeroplayer.ui.effects.aeroPressScale
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -141,7 +142,8 @@ fun MiniPlayer(
 
         IconButton(
             onClick =
-                onPlayPauseClick
+                onPlayPauseClick,
+            modifier = Modifier.aeroPressScale()
         ) {
 
             Icon(

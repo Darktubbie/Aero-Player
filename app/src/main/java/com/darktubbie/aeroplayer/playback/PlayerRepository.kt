@@ -3,15 +3,32 @@ package com.darktubbie.aeroplayer.playback
 import android.content.ComponentName
 import android.content.Context
 import androidx.compose.runtime.State
+import android.os.Bundle
 import androidx.compose.runtime.mutableStateOf
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
+import androidx.media3.common.Timeline
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.darktubbie.aeroplayer.data.AudioTrack
+import com.darktubbie.aeroplayer.data.SettingsRepository
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
+
+/**
+ * Una fila de la cola de reproducción (Fase 8, 0.6.0).
+ *
+ * [index] es el índice real dentro de la playlist de Media3 (la
+ * identidad de la fila: la misma canción puede aparecer repetida
+ * en la cola, así que el uri solo no alcanza); [uri] sirve para
+ * resolver el [AudioTrack] correspondiente en la biblioteca.
+ */
+data class QueueEntry(
+    val index: Int,
+    val uri: String
+)
 
 /**
  * Envuelve un [MediaController] conectado a [PlaybackService] y
@@ -32,6 +49,12 @@ class PlayerRepository(
     private val context: Context
 ) {
 
+    // Fase 6 (0.6.0): mismo SharedPreferences que todo el resto de
+    // la app, no un almacenamiento nuevo — ver "ÚLTIMA COLA" en
+    // SettingsRepository.
+    private val settingsRepository =
+        SettingsRepository(context)
+
     private var controller: MediaController? = null
 
     private var controllerFuture:
@@ -42,6 +65,23 @@ class PlayerRepository(
 
     val currentTrackUri: State<String?>
         get() = _currentTrackUri
+
+    /**
+     * Cola actual en ORDEN DE REPRODUCCIÓN (con shuffle activo es el
+     * orden aleatorio real de Media3, no el original). Fase 8.
+     */
+    private val _queue =
+        mutableStateOf<List<QueueEntry>>(emptyList())
+
+    val queue: State<List<QueueEntry>>
+        get() = _queue
+
+    /** Índice (de Media3) de la fila que está sonando, o -1. */
+    private val _currentQueueIndex =
+        mutableStateOf(-1)
+
+    val currentQueueIndex: State<Int>
+        get() = _currentQueueIndex
 
     private val _isPlaying =
         mutableStateOf(false)
@@ -136,6 +176,48 @@ class PlayerRepository(
             ) {
 
                 _isPlaying.value = isPlaying
+
+                // Fase 6 (0.6.0): se guarda al pausar (no en cada
+                // tick) para no escribir a disco todo el tiempo
+                // mientras suena — alcanza con quedar bien parado
+                // en el último punto en que se pausó.
+                if (!isPlaying) {
+
+                    controller?.currentPosition?.let { position ->
+                        settingsRepository.saveLastPositionMs(position)
+                    }
+                }
+            }
+
+            // Fase 5 (0.6.0): el widget puede cambiar shuffle/repeat
+            // directo sobre el Player del servicio, sin pasar por
+            // toggleShuffle()/cycleRepeatMode() — sin estos dos
+            // listeners la UI de la app quedaría desincronizada.
+            override fun onShuffleModeEnabledChanged(
+                shuffleModeEnabled: Boolean
+            ) {
+
+                _shuffleEnabled.value = shuffleModeEnabled
+
+                refreshQueue()
+            }
+
+            // Fase 8 (0.6.0): cualquier cambio en la playlist
+            // (setMediaItems, mover, quitar) llega por acá, venga de
+            // la app, del widget o del tile.
+            override fun onTimelineChanged(
+                timeline: Timeline,
+                reason: Int
+            ) {
+
+                refreshQueue()
+            }
+
+            override fun onRepeatModeChanged(
+                repeatMode: Int
+            ) {
+
+                _repeatMode.value = repeatMode
             }
 
             override fun onPositionDiscontinuity(
@@ -202,6 +284,13 @@ class PlayerRepository(
 
                 _currentTrackUri.value =
                     mediaItem?.mediaId
+
+                _currentQueueIndex.value =
+                    controller?.currentMediaItemIndex ?: -1
+
+                controller?.currentMediaItemIndex?.let { index ->
+                    settingsRepository.saveLastQueueIndex(index)
+                }
 
                 // La duración de la nueva pista aún
                 // puede no estar lista aquí; se
@@ -353,7 +442,205 @@ class PlayerRepository(
         _repeatMode.value =
             controller.repeatMode
 
+        refreshQueue()
+
         refreshPosition()
+    }
+
+    /**
+     * Relee la cola desde la playlist de Media3 (Fase 8, 0.6.0).
+     *
+     * Con shuffle activo se recorre la timeline en el orden
+     * aleatorio real (`getFirstWindowIndex`/`getNextWindowIndex`
+     * con shuffle = true), para que la pantalla de cola muestre lo
+     * que de verdad va a sonar y no el orden original.
+     *
+     * También deja [queuedTrackUris] (orden ORIGINAL de la
+     * playlist) al día: tras mover o quitar canciones desde la
+     * cola, comparar contra una lista vieja haría que [playQueue]
+     * creyera que sigue cargada la cola de antes.
+     */
+    private fun refreshQueue() {
+
+        val controller =
+            controller
+                ?: return
+
+        val count =
+            controller.mediaItemCount
+
+        val timeline =
+            controller.currentTimeline
+
+        val originalUris =
+            ArrayList<String>(count)
+
+        for (i in 0 until count) {
+
+            originalUris.add(
+                controller.getMediaItemAt(i).mediaId
+            )
+        }
+
+        val entries =
+            ArrayList<QueueEntry>(count)
+
+        if (
+            !controller.shuffleModeEnabled ||
+            timeline.isEmpty
+        ) {
+
+            for (i in 0 until count) {
+
+                entries.add(
+                    QueueEntry(i, originalUris[i])
+                )
+            }
+
+        } else {
+
+            var i =
+                timeline.getFirstWindowIndex(true)
+
+            while (
+                i != C.INDEX_UNSET &&
+                entries.size < count
+            ) {
+
+                entries.add(
+                    QueueEntry(i, originalUris[i])
+                )
+
+                i =
+                    timeline.getNextWindowIndex(
+                        i,
+                        Player.REPEAT_MODE_OFF,
+                        true
+                    )
+            }
+        }
+
+        _queue.value = entries
+
+        _currentQueueIndex.value =
+            controller.currentMediaItemIndex
+
+        queuedTrackUris =
+            if (originalUris.isEmpty()) null else originalUris
+    }
+
+    /**
+     * Mueve una fila de la cola (índices de Media3, ver
+     * [QueueEntry.index]). Solo tiene sentido con shuffle apagado:
+     * la UI no ofrece reordenar mientras shuffle está activo.
+     */
+    fun moveQueueItem(
+        fromIndex: Int,
+        toIndex: Int
+    ) {
+
+        val controller =
+            controller
+                ?: return
+
+        val count =
+            controller.mediaItemCount
+
+        if (
+            fromIndex !in 0 until count ||
+            toIndex !in 0 until count ||
+            fromIndex == toIndex
+        ) {
+            return
+        }
+
+        controller.moveMediaItem(
+            fromIndex,
+            toIndex
+        )
+
+        persistQueue()
+    }
+
+    /** Quita una fila de la cola (índice de Media3). */
+    fun removeQueueItem(
+        index: Int
+    ) {
+
+        val controller =
+            controller
+                ?: return
+
+        if (index !in 0 until controller.mediaItemCount) {
+            return
+        }
+
+        controller.removeMediaItem(index)
+
+        persistQueue()
+    }
+
+    /** Salta a una fila de la cola y reproduce desde el inicio. */
+    fun playQueueItem(
+        index: Int
+    ) {
+
+        val controller =
+            controller
+                ?: return
+
+        if (index !in 0 until controller.mediaItemCount) {
+            return
+        }
+
+        controller.seekTo(index, 0L)
+
+        controller.play()
+    }
+
+    /**
+     * Guarda la cola actual (reanudación en frío, Fase 6) tras un
+     * cambio hecho desde la pantalla de cola. Reconstruye los 5
+     * campos que persiste [SettingsRepository.saveLastQueue] desde
+     * los propios MediaItem, que ya los llevan.
+     */
+    private fun persistQueue() {
+
+        val controller =
+            controller
+                ?: return
+
+        val tracks =
+            (0 until controller.mediaItemCount).map { i ->
+
+                val item =
+                    controller.getMediaItemAt(i)
+
+                AudioTrack(
+                    uri = item.mediaId,
+                    title =
+                        item.mediaMetadata.title?.toString()
+                            ?: "",
+                    artist =
+                        item.mediaMetadata.artist?.toString()
+                            ?: "",
+                    album =
+                        item.mediaMetadata.albumTitle?.toString()
+                            ?: "",
+                    duration = 0L,
+                    path =
+                        item.mediaMetadata.extras
+                            ?.getString(EXTRA_TRACK_PATH)
+                            ?: "",
+                    albumArtPath = null
+                )
+            }
+
+        settingsRepository.saveLastQueue(
+            tracks,
+            controller.currentMediaItemIndex
+                .coerceAtLeast(0)
+        )
     }
 
     private var queuedTrackUris: List<String>? = null
@@ -382,7 +669,11 @@ class PlayerRepository(
      */
     fun playQueue(
         tracks: List<AudioTrack>,
-        startIndex: Int
+        startIndex: Int,
+        // Fase 8 (0.6.0): los botones "Reproducir"/"Aleatorio" del
+        // Album Showcase siempre deben arrancar, nunca alternar
+        // play/pause si la canción elegida ya es la actual.
+        forceRestart: Boolean = false
     ) {
 
         val controller =
@@ -397,6 +688,7 @@ class PlayerRepository(
             tracks[startIndex]
 
         if (
+            !forceRestart &&
             tappedTrack.uri ==
             _currentTrackUri.value
         ) {
@@ -420,6 +712,8 @@ class PlayerRepository(
 
             controller.play()
 
+            settingsRepository.saveLastQueueIndex(startIndex)
+
             return
         }
 
@@ -434,6 +728,19 @@ class PlayerRepository(
                             .setTitle(track.title)
                             .setArtist(track.artist)
                             .setAlbumTitle(track.album)
+                            // Fase 5 (0.6.0): AlbumArtCache se
+                            // identifica por la ruta del archivo, y
+                            // el widget solo ve el MediaItem del
+                            // servicio — sin esto no podría pintar
+                            // la carátula real.
+                            .setExtras(
+                                Bundle().apply {
+                                    putString(
+                                        EXTRA_TRACK_PATH,
+                                        track.path
+                                    )
+                                }
+                            )
                             .build()
                     )
                     .build()
@@ -450,6 +757,28 @@ class PlayerRepository(
         controller.play()
 
         queuedTrackUris = trackUris
+
+        settingsRepository.saveLastQueue(tracks, startIndex)
+    }
+
+    /**
+     * Fija shuffle explícitamente (a diferencia de
+     * [toggleShuffle]). Lo usa el Album Showcase: "Reproducir"
+     * apaga shuffle y "Aleatorio" lo enciende. Fase 8 (0.6.0).
+     */
+    fun setShuffleEnabled(
+        enabled: Boolean
+    ) {
+
+        val controller =
+            controller
+                ?: return
+
+        controller.shuffleModeEnabled =
+            enabled
+
+        _shuffleEnabled.value =
+            enabled
     }
 
     fun togglePlayPause() {
@@ -458,14 +787,7 @@ class PlayerRepository(
             controller
                 ?: return
 
-        if (controller.isPlaying) {
-
-            controller.pause()
-
-        } else {
-
-            controller.play()
-        }
+        PlayerCommands.togglePlayPause(controller)
     }
 
     /**
@@ -494,6 +816,8 @@ class PlayerRepository(
         controller?.seekTo(positionMs)
 
         _positionMs.value = positionMs
+
+        settingsRepository.saveLastPositionMs(positionMs)
     }
 
     /**
@@ -566,17 +890,7 @@ class PlayerRepository(
                 ?: return
 
         val nextMode =
-            when (controller.repeatMode) {
-
-                Player.REPEAT_MODE_OFF ->
-                    Player.REPEAT_MODE_ALL
-
-                Player.REPEAT_MODE_ALL ->
-                    Player.REPEAT_MODE_ONE
-
-                else ->
-                    Player.REPEAT_MODE_OFF
-            }
+            PlayerCommands.nextRepeatMode(controller.repeatMode)
 
         controller.repeatMode = nextMode
 

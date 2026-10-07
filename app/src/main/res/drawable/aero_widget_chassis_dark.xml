@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Chasis Aero (oscuro), misma silueta asimétrica que la versión clara -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#40000000" />
+            <corners
+                android:topLeftRadius="42dp"
+                android:topRightRadius="16dp"
+                android:bottomLeftRadius="42dp"
+                android:bottomRightRadius="16dp" />
+        </shape>
+    </item>
+    <item android:bottom="4dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:endColor="#0C1519"
+                android:startColor="#34464F" />
+            <corners
+                android:topLeftRadius="42dp"
+                android:topRightRadius="16dp"
+                android:bottomLeftRadius="42dp"
+                android:bottomRightRadius="16dp" />
+            <stroke
+                android:width="1.5dp"
+                android:color="#993EDBC0" />
+        </shape>
+    </item>
+    <item
+        android:height="50dp"
+        android:gravity="top"
+        android:left="3dp"
+        android:right="3dp"
+        android:top="3dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:endColor="#00FFFFFF"
+                android:startColor="#38FFFFFF" />
+            <corners
+                android:topLeftRadius="39dp"
+                android:topRightRadius="13dp"
+                android:bottomLeftRadius="30dp"
+                android:bottomRightRadius="10dp" />
+        </shape>
+    </item>
+</layer-list>

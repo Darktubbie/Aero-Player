@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Carátula por defecto (revisión "doble capa"): antes era un
+     cuadrado verde redondeado tipo ícono Material — muy distinto al
+     chasis del Handheld, lo que hacía que el hueco de la pantalla se
+     leyera como "otra app" en vez de un estado vacío del mismo
+     reproductor. Ahora usa los mismos tonos azul/cian que la pantalla
+     del chasis. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="315"
+                android:endColor="#0E3C7A"
+                android:startColor="#2F8FD6" />
+        </shape>
+    </item>
+    <item
+        android:width="28dp"
+        android:height="28dp"
+        android:gravity="center">
+        <vector
+            android:width="28dp"
+            android:height="28dp"
+            android:viewportWidth="24"
+            android:viewportHeight="24">
+            <path
+                android:fillColor="#C8ECFF"
+                android:pathData="M12,3v10.55c-0.59,-0.34 -1.27,-0.55 -2,-0.55 -2.21,0 -4,1.79 -4,4s1.79,4 4,4 4,-1.79 4,-4V7h4V3h-6z" />
+        </vector>
+    </item>
+</layer-list>

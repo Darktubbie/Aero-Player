@@ -6,10 +6,17 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager
 import android.os.Build
+import android.os.Bundle
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import com.darktubbie.aeroplayer.data.SettingsRepository
+import com.darktubbie.aeroplayer.widget.AeroWidget
+import com.darktubbie.aeroplayer.widget.AeroWidgetSync
+import androidx.media3.common.Player
+import java.lang.ref.WeakReference
 
 /**
  * Servicio Media3 que aloja el [ExoPlayer] real y la [MediaSession]
@@ -32,6 +39,8 @@ import com.darktubbie.aeroplayer.data.SettingsRepository
 class PlaybackService : MediaSessionService() {
 
     private var mediaSession: MediaSession? = null
+
+    private var widgetSync: AeroWidgetSync? = null
 
     private lateinit var settingsRepository: SettingsRepository
 
@@ -86,6 +95,17 @@ class PlaybackService : MediaSessionService() {
                 player
             ).build()
 
+        restoreLastQueue(player)
+
+        // Fase 5 (0.6.0): el widget lee y controla este mismo
+        // Player — no existe ningún reproductor paralelo.
+        playerRef = WeakReference(player)
+
+        widgetSync =
+            AeroWidgetSync(this, player).also {
+                it.attach()
+            }
+
         val filter =
             IntentFilter(
                 AudioManager.ACTION_AUDIO_BECOMING_NOISY
@@ -110,6 +130,60 @@ class PlaybackService : MediaSessionService() {
                 filter
             )
         }
+    }
+
+    /**
+     * Reanudación en frío (Fase 6, 0.6.0): cuando el sistema mató
+     * el proceso por no haber reproducción activa
+     * ([onTaskRemoved]), el próximo arranque de este servicio (por
+     * un toque en el Aero Widget o el Quick Settings Tile) no tiene
+     * ningún [Player] vivo del que partir. Se restaura acá la
+     * última cola guardada — EN PAUSA (`playWhenReady` nunca se
+     * toca, queda en su default `false`): que el servicio exista de
+     * nuevo no significa que el usuario pidió reproducir, solo deja
+     * lista la cola para que el próximo toque de play la continúe
+     * en vez de mandar a elegir de nuevo desde la app.
+     */
+    private fun restoreLastQueue(player: ExoPlayer) {
+
+        val (tracks, index, positionMs) =
+            settingsRepository.loadLastQueue()
+
+        if (tracks.isEmpty()) {
+            return
+        }
+
+        val mediaItems =
+            tracks.map { track ->
+
+                MediaItem.Builder()
+                    .setMediaId(track.uri)
+                    .setUri(track.uri)
+                    .setMediaMetadata(
+                        MediaMetadata.Builder()
+                            .setTitle(track.title)
+                            .setArtist(track.artist)
+                            .setAlbumTitle(track.album)
+                            .setExtras(
+                                Bundle().apply {
+                                    putString(
+                                        EXTRA_TRACK_PATH,
+                                        track.path
+                                    )
+                                }
+                            )
+                            .build()
+                    )
+                    .build()
+            }
+
+        player.setMediaItems(
+            mediaItems,
+            index,
+            positionMs
+        )
+
+        player.prepare()
     }
 
     override fun onGetSession(
@@ -149,6 +223,14 @@ class PlaybackService : MediaSessionService() {
 
     override fun onDestroy() {
 
+        widgetSync?.release()
+        widgetSync = null
+        playerRef = null
+
+        // Sin servicio no hay reproducción: el widget vuelve a su
+        // estado de reposo en vez de quedarse con la última canción.
+        AeroWidget.refresh(this)
+
         try {
 
             unregisterReceiver(
@@ -171,5 +253,19 @@ class PlaybackService : MediaSessionService() {
         }
 
         super.onDestroy()
+    }
+
+    companion object {
+
+        @Volatile
+        private var playerRef: WeakReference<Player>? = null
+
+        /**
+         * Player real del servicio, o null si el servicio no está
+         * vivo. Solo debe usarse desde el hilo principal (el mismo
+         * hilo de aplicación con el que ExoPlayer fue creado).
+         */
+        fun currentPlayer(): Player? =
+            playerRef?.get()
     }
 }

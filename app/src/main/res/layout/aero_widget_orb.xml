@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Orb: basado directamente en el reproductor ovalado de widget_02.jpeg. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingStart="43dp"
+        android:paddingTop="37dp"
+        android:paddingEnd="43dp"
+        android:paddingBottom="22dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="88dp"
+            android:layout_gravity="top"
+            android:background="@drawable/aero_widget_orb_screen"
+            android:orientation="vertical"
+            android:paddingStart="9dp"
+            android:paddingTop="7dp"
+            android:paddingEnd="9dp"
+            android:paddingBottom="6dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:includeFontPadding="false"
+                android:text="AERO PLAYER"
+                android:textColor="#AEEBFF"
+                android:textSize="7sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:ellipsize="end"
+                android:fontFamily="monospace"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:text="Song title"
+                android:textColor="#FFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:text="TIME"
+                    android:textColor="#BFEFFF"
+                    android:textSize="6sp" />
+
+                <TextView
+                    android:id="@+id/widget_position"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_weight="1"
+                    android:fontFamily="monospace"
+                    android:includeFontPadding="false"
+                    android:text="00:00"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:text="AERO"
+                    android:textColor="#BFEFFF"
+                    android:textSize="6sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="58dp"
+            android:layout_gravity="bottom"
+            android:gravity="center_vertical">
+
+            <ImageButton
+                android:id="@+id/widget_previous"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="@drawable/aero_widget_orb_minibutton"
+                android:contentDescription="@null"
+                android:padding="7dp"
+                android:src="@drawable/ic_widget_previous"
+                android:tint="#2E679B" />
+
+            <ImageButton
+                android:id="@+id/widget_next"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/aero_widget_orb_minibutton"
+                android:contentDescription="@null"
+                android:padding="7dp"
+                android:src="@drawable/ic_widget_next"
+                android:tint="#2E679B" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+
+            <!-- 62dp + 15dp padding evita que el icono quede cortado por el aro. -->
+            <ImageButton
+                android:id="@+id/widget_play"
+                android:layout_width="62dp"
+                android:layout_height="62dp"
+                android:background="@drawable/aero_widget_orb_playknob"
+                android:contentDescription="@null"
+                android:padding="15dp"
+                android:src="@drawable/ic_widget_play"
+                android:tint="#2E679B" />
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_gravity="center_vertical|end"
+            android:layout_marginEnd="2dp"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_widget_volume" />
+    </FrameLayout>
+</FrameLayout>

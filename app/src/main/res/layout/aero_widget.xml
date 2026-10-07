@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Aero Widget (Fase 5, 0.6.0). Solo vistas soportadas por RemoteViews.
+     Los textos son de muestra para la vista previa del selector de widgets;
+     en ejecución AeroWidget los reemplaza con el estado real. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/aero_widget_chassis_light"
+    android:padding="14dp">
+
+    <!-- Nub decorativo (Fase 6, revisión "look único"): rompe la
+         silueta de "tarjeta con esquinas redondeadas" — ver
+         drawable/aero_widget_nub.xml. -->
+    <ImageView
+        android:layout_width="14dp"
+        android:layout_height="14dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="7dp"
+        android:layout_marginEnd="11dp"
+        android:contentDescription="@null"
+        android:src="@drawable/aero_widget_nub" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/widget_art"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:background="@drawable/aero_widget_art_frame"
+            android:contentDescription="@null"
+            android:padding="3dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/aero_widget_art_placeholder" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/widget_display"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="@drawable/aero_widget_display_light"
+                android:gravity="center_vertical"
+                android:orientation="vertical"
+                android:paddingStart="9dp"
+                android:paddingTop="3dp"
+                android:paddingEnd="9dp"
+                android:paddingBottom="3dp">
+
+                <TextView
+                    android:id="@+id/widget_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:includeFontPadding="false"
+                    android:singleLine="true"
+                    android:text="Aero Player"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/widget_subtitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:includeFontPadding="false"
+                    android:singleLine="true"
+                    android:text="Artist – Album"
+                    android:textColor="#BFE6FF"
+                    android:textSize="12sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/widget_position"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:includeFontPadding="false"
+                        android:text="0:00"
+                        android:textColor="#BFE6FF"
+                        android:textSize="10sp" />
+
+                    <ProgressBar
+                        android:id="@+id/widget_progress"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="0dp"
+                        android:layout_height="6dp"
+                        android:layout_marginStart="6dp"
+                        android:layout_marginEnd="6dp"
+                        android:layout_weight="1"
+                        android:indeterminate="false"
+                        android:max="1000"
+                        android:maxHeight="6dp"
+                        android:minHeight="6dp"
+                        android:progress="350"
+                        android:progressDrawable="@drawable/aero_widget_progress" />
+
+                    <TextView
+                        android:id="@+id/widget_duration"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:includeFontPadding="false"
+                        android:text="0:00"
+                        android:textColor="#BFE6FF"
+                        android:textSize="10sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <ImageButton
+                        android:id="@+id/widget_shuffle"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/aero_widget_button_light"
+                        android:contentDescription="@null"
+                        android:padding="7dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/ic_widget_shuffle" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <ImageButton
+                        android:id="@+id/widget_previous"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/aero_widget_button_light"
+                        android:contentDescription="@null"
+                        android:padding="7dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/ic_widget_previous" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <ImageButton
+                        android:id="@+id/widget_play"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/aero_widget_play_light"
+                        android:contentDescription="@null"
+                        android:padding="8dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/ic_widget_play" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <ImageButton
+                        android:id="@+id/widget_next"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/aero_widget_button_light"
+                        android:contentDescription="@null"
+                        android:padding="7dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/ic_widget_next" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <ImageButton
+                        android:id="@+id/widget_repeat"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/aero_widget_button_light"
+                        android:contentDescription="@null"
+                        android:padding="7dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/ic_widget_repeat" />
+                </FrameLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

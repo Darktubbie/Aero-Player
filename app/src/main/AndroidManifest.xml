@@ -16,6 +16,7 @@
 
         <activity
             android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
             android:exported="true">
 
             <intent-filter>
@@ -32,6 +33,73 @@
 
             <intent-filter>
                 <action android:name="androidx.media3.session.MediaSessionService" />
+            </intent-filter>
+
+        </service>
+
+        <!-- Fase 5/6 (0.6.0): los 3 widgets de Aero Player —
+             Classic (widget_01.jpeg), Orb (widget_02.jpeg) y
+             Handheld (widget_03.jpeg). Cada uno es su propio
+             receiver para que el selector de widgets de Android los
+             muestre como 3 opciones distintas; los 3 delegan en el
+             mismo AeroWidget (ver BaseAeroWidgetProvider).
+             exported=false: solo el sistema (AppWidgetService) y
+             nuestros propios PendingIntent les envían broadcasts. -->
+        <receiver
+            android:name=".widget.AeroWidgetClassicProvider"
+            android:exported="false">
+
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/aero_widget_classic_info" />
+
+        </receiver>
+
+        <receiver
+            android:name=".widget.AeroWidgetOrbProvider"
+            android:exported="false">
+
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/aero_widget_orb_info" />
+
+        </receiver>
+
+        <receiver
+            android:name=".widget.AeroWidgetHandheldProvider"
+            android:exported="false">
+
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/aero_widget_handheld_info" />
+
+        </receiver>
+
+        <!-- Fase 6 (0.6.0): Quick Settings Tile. BIND_QUICK_SETTINGS_TILE
+             es obligatorio y ya garantiza que solo el sistema lo
+             invoque, por eso exported=true (igual que cualquier
+             TileService de la plataforma). -->
+        <service
+            android:name=".widget.AeroQuickSettingsTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_tile_aero"
+            android:label="@string/tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
             </intent-filter>
 
         </service>

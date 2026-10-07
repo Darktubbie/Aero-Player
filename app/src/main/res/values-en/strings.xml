@@ -70,6 +70,7 @@
     <string name="more_subtitle">Tools and settings for Aero Player</string>
     <string name="settings_title">Settings</string>
     <string name="settings_section_appearance">Appearance</string>
+    <string name="settings_section_desktop">Aero Desktop</string>
     <string name="settings_section_playback">Playback</string>
     <string name="settings_section_animations">Animations</string>
     <string name="settings_section_library">Library</string>
@@ -80,6 +81,12 @@
     <string name="settings_language_label">Language</string>
     <string name="settings_language_es">Español</string>
     <string name="settings_language_en">English</string>
+    <string name="settings_desktop_label">Aero Desktop mode</string>
+    <string name="settings_desktop_hint">Auto: uses Aero Desktop in landscape and its vertical variant in portrait. No dedicated screens yet in this version — nothing visible changes yet</string>
+    <string name="settings_desktop_off">Off</string>
+    <string name="settings_desktop_auto">Auto</string>
+    <string name="desktop_exit_label">Back to Mobile</string>
+    <string name="cd_exit_desktop">Exit Aero Desktop</string>
     <string name="settings_bluetooth_title">Pause on Bluetooth disconnect</string>
     <string name="settings_bluetooth_subtitle">Pauses the music if the Bluetooth device playing it disconnects</string>
     <string name="settings_ambient_intensity_label">Ambient effects intensity</string>
@@ -174,4 +181,30 @@
     <string name="home_aero_picks_empty">Listen to and favorite a few songs to see recommendations here.</string>
     <string name="home_quick_actions">Quick actions</string>
     <string name="home_see_all">See all</string>
+    <string name="widget_classic_description">Classic widget: compact desktop-skin style player with a control wheel and LCD screen</string>
+    <string name="widget_orb_description">Orb widget: circular capsule with a big playback dial</string>
+    <string name="widget_handheld_description">Handheld widget: portable player with the artwork filling the whole screen</string>
+    <string name="widget_idle_title">Aero Player</string>
+    <string name="widget_idle_hint">Tap to open</string>
+    <string name="tile_label">Aero Player</string>
+    <string name="tile_subtitle_playing">Playing</string>
+    <string name="tile_subtitle_idle">Paused — tap to resume</string>
+    <string name="settings_section_rest_mode">Aero Rest Mode</string>
+    <string name="settings_rest_mode_label">Aero Rest Mode</string>
+    <string name="settings_rest_mode_hint">Auto: after a while with no touches, everything dims and only the icon stays, very faint. Any tap exits it.</string>
+    <string name="settings_rest_mode_off">Off</string>
+    <string name="settings_rest_mode_on">Auto</string>
+    <string name="rest_mode_cd_exit">Tap to exit rest mode</string>
+
+    <!-- Phase 8 (0.6.0): Album Showcase and Playback Queue -->
+    <string name="showcase_play">Play</string>
+    <string name="showcase_shuffle">Shuffle</string>
+    <string name="cd_open_album_showcase">View album</string>
+    <string name="queue_title">Playback Queue</string>
+    <string name="queue_playing_next">Playing next</string>
+    <string name="queue_shuffle_order_hint">Shuffle is on: the queue can\'t be reordered.</string>
+    <string name="cd_open_queue">Open playback queue</string>
+    <string name="cd_close_queue">Close playback queue</string>
+    <string name="cd_remove_from_queue">Remove from queue</string>
+    <string name="cd_reorder_queue">Press and drag to reorder</string>
 </resources>

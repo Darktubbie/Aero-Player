@@ -70,6 +70,7 @@
     <string name="more_subtitle">Herramientas y ajustes de Aero Player</string>
     <string name="settings_title">Ajustes</string>
     <string name="settings_section_appearance">Apariencia</string>
+    <string name="settings_section_desktop">Aero Desktop</string>
     <string name="settings_section_playback">Reproducción</string>
     <string name="settings_section_animations">Animaciones</string>
     <string name="settings_section_library">Biblioteca</string>
@@ -80,6 +81,12 @@
     <string name="settings_language_label">Idioma</string>
     <string name="settings_language_es">Español</string>
     <string name="settings_language_en">English</string>
+    <string name="settings_desktop_label">Modo Aero Desktop</string>
+    <string name="settings_desktop_hint">Automático: usa Aero Desktop en horizontal y su variante vertical en vertical. Todavía sin interfaces propias en esta versión — no cambia nada visible aún</string>
+    <string name="settings_desktop_off">Desactivado</string>
+    <string name="settings_desktop_auto">Automático</string>
+    <string name="desktop_exit_label">Volver a Mobile</string>
+    <string name="cd_exit_desktop">Salir de Aero Desktop</string>
     <string name="settings_bluetooth_title">Pausar al desconectar Bluetooth</string>
     <string name="settings_bluetooth_subtitle">Pausa la música si se desconecta el dispositivo Bluetooth que la está reproduciendo</string>
     <string name="settings_ambient_intensity_label">Intensidad de efectos ambientales</string>
@@ -174,4 +181,30 @@
     <string name="home_aero_picks_empty">Escuchá y marcá algunas canciones como favoritas para que aparezcan recomendaciones acá.</string>
     <string name="home_quick_actions">Accesos rápidos</string>
     <string name="home_see_all">Ver todo</string>
+    <string name="widget_classic_description">Widget clásico: reproductor compacto tipo skin de escritorio, con rueda de controles y pantalla LCD</string>
+    <string name="widget_orb_description">Widget Orb: cápsula circular con dial de reproducción grande</string>
+    <string name="widget_handheld_description">Widget Handheld: reproductor portátil con la carátula ocupando toda la pantalla</string>
+    <string name="widget_idle_title">Aero Player</string>
+    <string name="widget_idle_hint">Toca para abrir</string>
+    <string name="tile_label">Aero Player</string>
+    <string name="tile_subtitle_playing">Reproduciendo</string>
+    <string name="tile_subtitle_idle">Pausado — toca para reanudar</string>
+    <string name="settings_section_rest_mode">Aero Rest Mode</string>
+    <string name="settings_rest_mode_label">Aero Rest Mode</string>
+    <string name="settings_rest_mode_hint">Automático: después de un rato sin tocar la pantalla, todo se oscurece y queda solo el ícono, muy tenue. Cualquier toque lo saca.</string>
+    <string name="settings_rest_mode_off">Desactivado</string>
+    <string name="settings_rest_mode_on">Automático</string>
+    <string name="rest_mode_cd_exit">Tocá para salir del modo descanso</string>
+
+    <!-- Fase 8 (0.6.0): Album Showcase y Playback Queue -->
+    <string name="showcase_play">Reproducir</string>
+    <string name="showcase_shuffle">Aleatorio</string>
+    <string name="cd_open_album_showcase">Ver álbum</string>
+    <string name="queue_title">Cola de reproducción</string>
+    <string name="queue_playing_next">Siguientes</string>
+    <string name="queue_shuffle_order_hint">Orden aleatorio activo: la cola no se puede reordenar.</string>
+    <string name="cd_open_queue">Abrir cola de reproducción</string>
+    <string name="cd_close_queue">Cerrar cola de reproducción</string>
+    <string name="cd_remove_from_queue">Quitar de la cola</string>
+    <string name="cd_reorder_queue">Mantén y arrastra para reordenar</string>
 </resources>

@@ -1,6 +1,8 @@
 package com.darktubbie.aeroplayer.data
 
 import android.content.Context
+import org.json.JSONArray
+import org.json.JSONObject
 
 /**
  * Preferencias globales de reproducción que no encajan dentro de
@@ -173,5 +175,167 @@ class SettingsRepository(
         preferences.edit()
             .putInt("repeat_mode", mode)
             .apply()
+    }
+
+    /*
+     * ---------------------------------------------------------
+     * MODO AERO DESKTOP (Fase 1, 0.6.0)
+     * ---------------------------------------------------------
+     *
+     * Nulo significa "nunca elegido" → MainViewModel lo interpreta
+     * como AeroDesktopMode.OFF, el mismo comportamiento que la app
+     * ya tenía antes de esta fase (ver AeroDesktopMode.OFF).
+     */
+
+    fun loadAeroDesktopModeName(): String? {
+
+        return preferences.getString(
+            "aero_desktop_mode",
+            null
+        )
+    }
+
+    fun saveAeroDesktopModeName(
+        name: String
+    ) {
+
+        preferences.edit()
+            .putString("aero_desktop_mode", name)
+            .apply()
+    }
+
+    /*
+     * ---------------------------------------------------------
+     * AERO REST MODE (Fase 7, 0.6.0)
+     * ---------------------------------------------------------
+     *
+     * Opcional y apagado por defecto (igual que AeroDesktopMode):
+     * actualizar a 0.6.0 no debe cambiar el comportamiento de nadie
+     * sin que lo pida.
+     */
+
+    fun isRestModeEnabled(): Boolean {
+
+        return preferences.getBoolean(
+            "rest_mode_enabled",
+            false
+        )
+    }
+
+    fun setRestModeEnabled(
+        enabled: Boolean
+    ) {
+
+        preferences.edit()
+            .putBoolean("rest_mode_enabled", enabled)
+            .apply()
+    }
+
+    /*
+     * ---------------------------------------------------------
+     * ÚLTIMA COLA (Fase 6, 0.6.0 — reanudación en frío)
+     * ---------------------------------------------------------
+     *
+     * El Aero Widget y el Quick Settings Tile pueden tocarse con
+     * PlaybackService completamente detenido (el sistema mató el
+     * proceso al no haber reproducción activa — ver
+     * `PlaybackService.onTaskRemoved`). En ese momento no existe
+     * ningún `Player` al que preguntarle "qué estabas escuchando",
+     * así que la última cola se persiste acá cada vez que cambia,
+     * y `PlaybackService.onCreate()` la restaura (en pausa, sin
+     * arrancar sola) para que haya algo que reanudar con un solo
+     * toque en vez de mandar a la app a elegir de nuevo.
+     *
+     * Se guardan solo los 5 campos que hacen falta para reconstruir
+     * los `MediaItem` (uri/title/artist/album/path) — no un
+     * `AudioTrack` completo — en un JSON simple con `org.json`, ya
+     * incluido en el SDK de Android: no hace falta agregar ninguna
+     * dependencia nueva para esto.
+     */
+
+    fun saveLastQueue(
+        tracks: List<AudioTrack>,
+        index: Int
+    ) {
+
+        val array = JSONArray()
+
+        tracks.forEach { track ->
+
+            array.put(
+                JSONObject().apply {
+                    put("uri", track.uri)
+                    put("title", track.title)
+                    put("artist", track.artist)
+                    put("album", track.album)
+                    put("path", track.path)
+                }
+            )
+        }
+
+        preferences.edit()
+            .putString("last_queue", array.toString())
+            .putInt("last_queue_index", index)
+            .apply()
+    }
+
+    /**
+     * Solo actualiza el índice (p. ej. al saltar de canción): no
+     * reescribe toda la cola guardada.
+     */
+    fun saveLastQueueIndex(
+        index: Int
+    ) {
+
+        preferences.edit()
+            .putInt("last_queue_index", index)
+            .apply()
+    }
+
+    fun saveLastPositionMs(
+        positionMs: Long
+    ) {
+
+        preferences.edit()
+            .putLong("last_position_ms", positionMs)
+            .apply()
+    }
+
+    fun loadLastQueue(): Triple<List<AudioTrack>, Int, Long> {
+
+        val raw =
+            preferences.getString("last_queue", null)
+                ?: return Triple(emptyList(), 0, 0L)
+
+        val tracks =
+            runCatching {
+
+                val array = JSONArray(raw)
+
+                (0 until array.length()).map { i ->
+
+                    val item = array.getJSONObject(i)
+
+                    AudioTrack(
+                        uri = item.getString("uri"),
+                        title = item.getString("title"),
+                        artist = item.getString("artist"),
+                        album = item.getString("album"),
+                        duration = 0L,
+                        path = item.getString("path"),
+                        albumArtPath = null
+                    )
+                }
+
+            }.getOrDefault(emptyList())
+
+        val index =
+            preferences.getInt("last_queue_index", 0)
+                .coerceIn(0, (tracks.size - 1).coerceAtLeast(0))
+
+        val positionMs =
+            preferences.getLong("last_position_ms", 0L)
+
+        return Triple(tracks, index, positionMs)
     }
 }

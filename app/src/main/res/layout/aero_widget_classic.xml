@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Classic: reproductor compacto inspirado en widget_01.jpeg. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/aero_widget_classic_body"
+    android:padding="5dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="23dp"
+            android:gravity="center_vertical"
+            android:paddingStart="7dp"
+            android:paddingEnd="5dp">
+            <ImageView
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_widget_titlebar_badge" />
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:includeFontPadding="false"
+                android:paddingStart="5dp"
+                android:text="Aero Player"
+                android:textColor="#3C6692"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="_  □  ×"
+                android:textColor="#3D6D9E"
+                android:textSize="8sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp">
+
+            <FrameLayout
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:background="@drawable/aero_widget_classic_wheel">
+                <ImageButton
+                    android:id="@+id/widget_previous"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:layout_gravity="start|center_vertical"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="@null"
+                    android:padding="5dp"
+                    android:src="@drawable/ic_widget_previous"
+                    android:tint="#2D6497" />
+                <ImageButton
+                    android:id="@+id/widget_next"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:layout_gravity="end|center_vertical"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="@null"
+                    android:padding="5dp"
+                    android:src="@drawable/ic_widget_next"
+                    android:tint="#2D6497" />
+                <ImageView
+                    android:layout_width="11dp"
+                    android:layout_height="11dp"
+                    android:layout_gravity="top|center_horizontal"
+                    android:layout_marginTop="5dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_widget_folder" />
+                <ImageButton
+                    android:id="@+id/widget_play"
+                    android:layout_width="39dp"
+                    android:layout_height="39dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/aero_widget_classic_knob"
+                    android:contentDescription="@null"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_widget_play"
+                    android:tint="#2D6497" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="7dp"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:paddingTop="2dp"
+                android:paddingBottom="1dp">
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/aero_widget_classic_screen"
+                    android:paddingStart="10dp"
+                    android:paddingTop="5dp"
+                    android:paddingEnd="10dp"
+                    android:paddingBottom="4dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:orientation="vertical">
+                        <TextView
+                            android:id="@+id/widget_state_label"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="monospace"
+                            android:includeFontPadding="false"
+                            android:text="▶ PLAYING"
+                            android:textColor="#9BDFFF"
+                            android:textSize="7sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="monospace"
+                            android:includeFontPadding="false"
+                            android:text="NOW PLAYING"
+                            android:textColor="#9BDFFF"
+                            android:textSize="7sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:id="@+id/widget_position"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="monospace"
+                            android:includeFontPadding="false"
+                            android:text="00:00"
+                            android:textColor="#FFFFFF"
+                            android:textSize="22sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:id="@+id/widget_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:fontFamily="monospace"
+                            android:includeFontPadding="false"
+                            android:singleLine="true"
+                            android:text="Artist - Songtitle"
+                            android:textColor="#D6F2FF"
+                            android:textSize="9sp" />
+                    </LinearLayout>
+                    <ImageView
+                        android:layout_width="13dp"
+                        android:layout_height="13dp"
+                        android:layout_gravity="top|end"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_widget_folder" />
+                </FrameLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="17dp"
+                    android:gravity="center_vertical">
+                    <ProgressBar
+                        android:id="@+id/widget_progress"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="0dp"
+                        android:layout_height="5dp"
+                        android:layout_weight="1"
+                        android:indeterminate="false"
+                        android:max="1000"
+                        android:maxHeight="5dp"
+                        android:minHeight="5dp"
+                        android:progress="350"
+                        android:progressDrawable="@drawable/aero_widget_progress" />
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_marginStart="5dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_widget_volume" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

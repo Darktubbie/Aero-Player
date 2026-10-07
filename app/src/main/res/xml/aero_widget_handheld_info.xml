@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_handheld_description"
+    android:initialLayout="@layout/aero_widget_handheld"
+    android:minWidth="300dp"
+    android:minHeight="169dp"
+    android:minResizeWidth="270dp"
+    android:minResizeHeight="152dp"
+    android:previewLayout="@layout/aero_widget_handheld"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="5"
+    android:targetCellHeight="3"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen" />

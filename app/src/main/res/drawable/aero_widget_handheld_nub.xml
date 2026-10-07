@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Nub decorativo de los costados del Widget Handheld (como los
+     botones/agarres laterales de un reproductor portátil real). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <gradient
+                android:angle="270"
+                android:endColor="#8FB7DE"
+                android:startColor="#FFFFFF" />
+            <stroke
+                android:width="1dp"
+                android:color="#5A8CC2" />
+        </shape>
+    </item>
+</layer-list>

@@ -21,5 +21,12 @@ data class AudioTrack(
     val duration: Long,
     val path: String,
     val albumArtPath: String?,
-    val dateModifiedMs: Long = 0L
+    val dateModifiedMs: Long = 0L,
+    // Fase 8 (0.6.0): metadata para el Album Showcase. 0 = no
+    // disponible (bibliotecas guardadas antes de esta fase hasta
+    // que se vuelvan a escanear, o archivos sin ese tag).
+    val year: Int = 0,
+    // MediaStore.TRACK crudo (disco*1000 + pista; 0 = sin tag).
+    // Ordenar por este valor respeta disco y luego pista.
+    val trackNumber: Int = 0
 )

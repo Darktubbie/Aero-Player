@@ -25,7 +25,10 @@ import com.darktubbie.aeroplayer.playback.SleepTimerMode
 import com.darktubbie.aeroplayer.playback.SleepTimerState
 import com.darktubbie.aeroplayer.ui.effects.AmbientIntensity
 import com.darktubbie.aeroplayer.ui.library.LibraryTab
+import com.darktubbie.aeroplayer.ui.nowplaying.QueueItem
 import com.darktubbie.aeroplayer.ui.library.SortOrder
+import com.darktubbie.aeroplayer.ui.layout.AeroDesktopMode
+import com.darktubbie.aeroplayer.widget.AeroWidget
 import com.darktubbie.aeroplayer.ui.theme.AppTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -114,6 +117,89 @@ class MainViewModel(
     val repeatMode: State<Int>
         get() = playerRepository.repeatMode
 
+    /*
+     * Cola de reproducción para la pantalla Playback Queue
+     * (Fase 8, 0.6.0). Es un reflejo de la playlist real de Media3
+     * (ver PlayerRepository.queue), resuelta contra la biblioteca;
+     * las canciones que ya no existen en la biblioteca se omiten
+     * de la lista pero conservan su índice real en el resto.
+     */
+    val queueItems: State<List<QueueItem>> =
+        derivedStateOf {
+
+            val byUri =
+                _tracks.value.associateBy { it.uri }
+
+            playerRepository.queue.value.mapNotNull { entry ->
+
+                byUri[entry.uri]?.let { track ->
+                    QueueItem(entry.index, track)
+                }
+            }
+        }
+
+    val currentQueueIndex: State<Int>
+        get() = playerRepository.currentQueueIndex
+
+    fun moveQueueItem(
+        fromIndex: Int,
+        toIndex: Int
+    ) {
+        playerRepository.moveQueueItem(fromIndex, toIndex)
+    }
+
+    fun removeQueueItem(
+        index: Int
+    ) {
+        playerRepository.removeQueueItem(index)
+    }
+
+    fun playQueueItem(
+        index: Int
+    ) {
+        playerRepository.playQueueItem(index)
+    }
+
+    /**
+     * Album Showcase (Fase 8, 0.6.0): reproduce [tracks] (ya en el
+     * orden de álbum que decidió la pantalla). "Reproducir" apaga
+     * shuffle y arranca desde la primera pista; "Aleatorio" lo
+     * enciende y arranca desde una pista al azar. Ambos arrancan
+     * siempre (no alternan play/pause).
+     */
+    fun playAlbumTracks(
+        tracks: List<AudioTrack>,
+        shuffle: Boolean
+    ) {
+
+        if (tracks.isEmpty()) {
+            return
+        }
+
+        playerRepository.setShuffleEnabled(shuffle)
+
+        settingsRepository.setShuffleEnabled(shuffle)
+
+        playerRepository.playQueue(
+            tracks,
+            if (shuffle) tracks.indices.random() else 0,
+            forceRestart = true
+        )
+    }
+
+    /**
+     * Tocar una canción del tracklist del Album Showcase: reproduce
+     * el álbum como cola desde esa canción, sin tocar shuffle/repeat.
+     * Si ya es la canción actual, alterna play/pause (igual que en
+     * el resto de listas).
+     */
+    fun playAlbumTrack(
+        tracks: List<AudioTrack>,
+        index: Int
+    ) {
+        playerRepository.playQueue(tracks, index)
+    }
+
     private val _libraryTab =
         mutableStateOf(LibraryTab.SONGS)
 
@@ -189,6 +275,30 @@ class MainViewModel(
 
     val appLanguage: State<String>
         get() = _appLanguage
+
+    /**
+     * Ajuste OFF/AUTO de Aero Desktop (Fase 1, 0.6.0). Igual que
+     * [_appTheme], nace en OFF (el default que deja la app tal cual
+     * está hoy) y se restaura desde [SettingsRepository] en el
+     * bloque `init` de más abajo — nada más necesita leerlo antes de
+     * que este ViewModel exista, a diferencia de [_appLanguage].
+     */
+    private val _aeroDesktopMode =
+        mutableStateOf(AeroDesktopMode.OFF)
+
+    val aeroDesktopMode: State<AeroDesktopMode>
+        get() = _aeroDesktopMode
+
+    /**
+     * Ajuste OFF/ON de Aero Rest Mode (Fase 7, 0.6.0). Mismo patrón
+     * que [_aeroDesktopMode]: nace en OFF y se restaura desde
+     * [SettingsRepository] en el bloque `init`.
+     */
+    private val _restModeEnabled =
+        mutableStateOf(false)
+
+    val restModeEnabled: State<Boolean>
+        get() = _restModeEnabled
 
     /*
      * Derivadas de _tracks (+ búsqueda/orden/filtro): solo se
@@ -384,6 +494,20 @@ class MainViewModel(
                         _appTheme.value = restored
                     }
             }
+
+        settingsRepository.loadAeroDesktopModeName()
+            ?.let { name ->
+
+                runCatching {
+                    AeroDesktopMode.valueOf(name)
+                }.getOrNull()
+                    ?.let { restored ->
+                        _aeroDesktopMode.value = restored
+                    }
+            }
+
+        _restModeEnabled.value =
+            settingsRepository.isRestModeEnabled()
 
         // Fase 1 (0.4.x): restaura el orden elegido la última vez.
         // Si no hay nada guardado (instalación previa a esta fase),
@@ -605,6 +729,37 @@ class MainViewModel(
         settingsRepository.saveThemeName(
             theme.name
         )
+
+        // Fase 5 (0.6.0): el Aero Widget sigue el tema elegido.
+        AeroWidget.refresh(getApplication<Application>())
+    }
+
+    /**
+     * Solo persiste — no recrea la Activity ni cambia nada visible
+     * por sí sola: [com.darktubbie.aeroplayer.ui.layout.rememberAeroLayoutMode]
+     * es quien traduce este valor + la orientación real en un
+     * [com.darktubbie.aeroplayer.ui.layout.AeroLayoutMode], y en esta
+     * fase (Fase 1, 0.6.0) todavía nada distingue ese resultado en
+     * pantalla — eso llega recién en las Fases 2 y 3.
+     */
+    fun setAeroDesktopMode(
+        mode: AeroDesktopMode
+    ) {
+
+        _aeroDesktopMode.value = mode
+
+        settingsRepository.saveAeroDesktopModeName(
+            mode.name
+        )
+    }
+
+    fun setRestModeEnabled(
+        enabled: Boolean
+    ) {
+
+        _restModeEnabled.value = enabled
+
+        settingsRepository.setRestModeEnabled(enabled)
     }
 
     /**
@@ -620,6 +775,9 @@ class MainViewModel(
         _appLanguage.value = code
 
         settingsRepository.saveLanguageCode(code)
+
+        // Fase 5 (0.6.0): y el idioma elegido en Ajustes.
+        AeroWidget.refresh(getApplication<Application>())
     }
 
     fun onSearchQueryChange(
@@ -642,24 +800,6 @@ class MainViewModel(
         tab: LibraryTab
     ) {
         _libraryTab.value = tab
-    }
-
-    /**
-     * Reproduce el álbum completo como cola, empezando por su
-     * primera pista.
-     */
-    fun playAlbum(
-        album: Album
-    ) {
-
-        if (album.tracks.isEmpty()) {
-            return
-        }
-
-        playerRepository.playQueue(
-            album.tracks,
-            0
-        )
     }
 
     /**
@@ -833,6 +973,36 @@ class MainViewModel(
 
         val list =
             favoriteTracks.value
+
+        if (list.isEmpty()) {
+            return
+        }
+
+        val startIndex =
+            startingFrom
+                ?.let { list.indexOf(it) }
+                ?.takeIf { it != -1 }
+                ?: 0
+
+        playerRepository.playQueue(
+            list,
+            startIndex
+        )
+    }
+
+    /**
+     * Generaliza el mismo patrón de [playFavorites] a una lista
+     * arbitraria (Fase 2, 0.6.0): Aero Desktop necesita reproducir
+     * la lista que esté visible en cada momento (canciones de un
+     * álbum, de un artista, de una playlist, etc.) empezando por la
+     * canción que se tocó, sin necesitar una función dedicada por
+     * cada sección — es exactamente lo mismo que ya hacía
+     * `playFavorites`, solo que no atado a Favoritos.
+     */
+    fun playFromList(
+        list: List<AudioTrack>,
+        startingFrom: AudioTrack? = null
+    ) {
 
         if (list.isEmpty()) {
             return

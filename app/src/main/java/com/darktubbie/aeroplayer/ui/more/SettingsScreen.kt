@@ -43,6 +43,7 @@ import com.darktubbie.aeroplayer.R
 import com.darktubbie.aeroplayer.data.SettingsRepository
 import com.darktubbie.aeroplayer.ui.components.AeroBackground
 import com.darktubbie.aeroplayer.ui.effects.AmbientIntensity
+import com.darktubbie.aeroplayer.ui.layout.AeroDesktopMode
 import com.darktubbie.aeroplayer.ui.library.SortOrder
 import com.darktubbie.aeroplayer.ui.library.sortOrderLabel
 import com.darktubbie.aeroplayer.ui.theme.AeroColors
@@ -98,6 +99,10 @@ fun SettingsScreen(
     onAppThemeChange: (AppTheme) -> Unit,
     appLanguage: String,
     onAppLanguageChange: (String) -> Unit,
+    aeroDesktopMode: AeroDesktopMode,
+    onAeroDesktopModeChange: (AeroDesktopMode) -> Unit,
+    restModeEnabled: Boolean,
+    onRestModeEnabledChange: (Boolean) -> Unit,
     onOpenFolders: () -> Unit,
     onBack: () -> Unit
 ) {
@@ -235,6 +240,102 @@ fun SettingsScreen(
                                 modifier = Modifier.weight(1f)
                             )
                         }
+                    }
+                }
+
+                item {
+                    SettingsSectionHeader(stringResource(R.string.settings_section_desktop))
+                }
+
+                item {
+
+                    SettingsCard {
+
+                        Text(
+                            text = stringResource(R.string.settings_desktop_label),
+                            color = AeroColors.TextPrimary,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(bottom = 10.dp)
+                        )
+
+                        Row(
+                            horizontalArrangement =
+                                Arrangement.spacedBy(6.dp)
+                        ) {
+
+                            IntensityChip(
+                                label = stringResource(R.string.settings_desktop_off),
+                                selected = aeroDesktopMode == AeroDesktopMode.OFF,
+                                onClick = {
+                                    onAeroDesktopModeChange(AeroDesktopMode.OFF)
+                                },
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            IntensityChip(
+                                label = stringResource(R.string.settings_desktop_auto),
+                                selected = aeroDesktopMode == AeroDesktopMode.AUTO,
+                                onClick = {
+                                    onAeroDesktopModeChange(AeroDesktopMode.AUTO)
+                                },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+
+                        Text(
+                            text = stringResource(R.string.settings_desktop_hint),
+                            color = AeroColors.TextSecondary,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(top = 10.dp)
+                        )
+                    }
+                }
+
+                item {
+                    SettingsSectionHeader(stringResource(R.string.settings_section_rest_mode))
+                }
+
+                item {
+
+                    SettingsCard {
+
+                        Text(
+                            text = stringResource(R.string.settings_rest_mode_label),
+                            color = AeroColors.TextPrimary,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(bottom = 10.dp)
+                        )
+
+                        Row(
+                            horizontalArrangement =
+                                Arrangement.spacedBy(6.dp)
+                        ) {
+
+                            IntensityChip(
+                                label = stringResource(R.string.settings_rest_mode_off),
+                                selected = !restModeEnabled,
+                                onClick = {
+                                    onRestModeEnabledChange(false)
+                                },
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            IntensityChip(
+                                label = stringResource(R.string.settings_rest_mode_on),
+                                selected = restModeEnabled,
+                                onClick = {
+                                    onRestModeEnabledChange(true)
+                                },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+
+                        Text(
+                            text = stringResource(R.string.settings_rest_mode_hint),
+                            color = AeroColors.TextSecondary,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(top = 10.dp)
+                        )
                     }
                 }
 

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Chasis Aero (claro), revisión "look único": cuerpo asimétrico
+     (lóbulo grande del lado de la carátula, más angosto del lado de
+     los controles, en vez de un rectángulo de esquinas parejas) +
+     sombra de contacto abajo + franja de brillo especular arriba. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Sombra: la misma silueta, sin achicar, se asoma 4dp abajo
+         porque el cuerpo de encima queda recortado esos 4dp. -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#332B4A6E" />
+            <corners
+                android:topLeftRadius="42dp"
+                android:topRightRadius="16dp"
+                android:bottomLeftRadius="42dp"
+                android:bottomRightRadius="16dp" />
+        </shape>
+    </item>
+    <item android:bottom="4dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:endColor="#9CC8F2"
+                android:startColor="#F4FAFF" />
+            <corners
+                android:topLeftRadius="42dp"
+                android:topRightRadius="16dp"
+                android:bottomLeftRadius="42dp"
+                android:bottomRightRadius="16dp" />
+            <stroke
+                android:width="1.5dp"
+                android:color="#6FA6DA" />
+        </shape>
+    </item>
+    <item
+        android:height="50dp"
+        android:gravity="top"
+        android:left="3dp"
+        android:right="3dp"
+        android:top="3dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:endColor="#00FFFFFF"
+                android:startColor="#B3FFFFFF" />
+            <corners
+                android:topLeftRadius="39dp"
+                android:topRightRadius="13dp"
+                android:bottomLeftRadius="30dp"
+                android:bottomRightRadius="10dp" />
+        </shape>
+    </item>
+</layer-list>

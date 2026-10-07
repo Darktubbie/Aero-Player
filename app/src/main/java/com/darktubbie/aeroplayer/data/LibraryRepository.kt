@@ -83,6 +83,16 @@ class LibraryRepository(
                             "dateModifiedMs",
                             track.dateModifiedMs
                         )
+
+                        put(
+                            "year",
+                            track.year
+                        )
+
+                        put(
+                            "trackNumber",
+                            track.trackNumber
+                        )
                     }
 
                 jsonArray.put(json)
@@ -172,6 +182,20 @@ class LibraryRepository(
                             json.optLong(
                                 "dateModifiedMs",
                                 0L
+                            ),
+
+                        // Fase 8 (0.6.0): ausentes en bibliotecas
+                        // guardadas antes -> 0 (no disponible).
+                        year =
+                            json.optInt(
+                                "year",
+                                0
+                            ),
+
+                        trackNumber =
+                            json.optInt(
+                                "trackNumber",
+                                0
                             )
                     )
                 )
@@ -260,7 +284,12 @@ class LibraryRepository(
                 // Fase 1 (0.4.x): base para el orden "Más
                 // recientes primero". MediaStore la guarda en
                 // segundos, no en milisegundos.
-                MediaStore.Audio.Media.DATE_MODIFIED
+                MediaStore.Audio.Media.DATE_MODIFIED,
+
+                // Fase 8 (0.6.0): Album Showcase.
+                MediaStore.Audio.Media.YEAR,
+
+                MediaStore.Audio.Media.TRACK
             )
 
         val selection =
@@ -313,6 +342,16 @@ class LibraryRepository(
             val dateModifiedIndex =
                 cursor.getColumnIndexOrThrow(
                     MediaStore.Audio.Media.DATE_MODIFIED
+                )
+
+            val yearIndex =
+                cursor.getColumnIndexOrThrow(
+                    MediaStore.Audio.Media.YEAR
+                )
+
+            val trackIndex =
+                cursor.getColumnIndexOrThrow(
+                    MediaStore.Audio.Media.TRACK
                 )
 
             while (cursor.moveToNext()) {
@@ -416,6 +455,18 @@ class LibraryRepository(
                          */
                         albumArtPath =
                             null,
+
+                        year =
+                            cursor.getInt(yearIndex)
+                                .coerceAtLeast(0),
+
+                        // MediaStore.TRACK = disco*1000 + pista
+                        // (p. ej. 1005 = disco 1, pista 5). Se
+                        // guarda crudo: ordenar por este valor ya
+                        // respeta disco y luego pista.
+                        trackNumber =
+                            cursor.getInt(trackIndex)
+                                .coerceAtLeast(0),
 
                         dateModifiedMs =
                             dateModifiedMs

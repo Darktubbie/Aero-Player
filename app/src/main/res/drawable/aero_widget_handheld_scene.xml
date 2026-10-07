@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fondo detrás del chasis Handheld (tema claro) — revisión "Modo
+     Nuclear": antes tenía un fondo de peces/estanque de una prueba
+     descartada; se reemplaza por un degradado helado simple,
+     hermano del de aero_widget_handheld_scene_dark.xml. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="315"
+        android:centerColor="#BFE3FF"
+        android:endColor="#8FC7EC"
+        android:startColor="#EAF6FF" />
+</shape>

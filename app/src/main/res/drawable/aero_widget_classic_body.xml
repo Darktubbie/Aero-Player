@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Widget 01 "Classic" — cuerpo tipo "skin compacta" de reproductor
+     multimedia: pill metálica azul con banda de brillo arriba. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:endColor="#3E7FCB"
+                android:startColor="#EAF4FF" />
+            <corners android:radius="999dp" />
+            <stroke
+                android:width="1.5dp"
+                android:color="#2A5FA0" />
+        </shape>
+    </item>
+    <item
+        android:height="26dp"
+        android:gravity="top">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:endColor="#00FFFFFF"
+                android:startColor="#B3FFFFFF" />
+            <corners android:radius="999dp" />
+        </shape>
+    </item>
+</layer-list>

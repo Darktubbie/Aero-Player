@@ -10,11 +10,21 @@ import java.util.Locale
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.core.view.WindowCompat
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import com.darktubbie.aeroplayer.ui.components.AeroRestModeOverlay
+import kotlinx.coroutines.delay
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -32,7 +42,10 @@ import com.darktubbie.aeroplayer.ui.ape.ApeEditorScreen
 import com.darktubbie.aeroplayer.ui.components.AddToPlaylistSheet
 import com.darktubbie.aeroplayer.ui.components.MiniPlayer
 import com.darktubbie.aeroplayer.ui.effects.AmbientPlaybackInfo
+import com.darktubbie.aeroplayer.ui.effects.AeroTouchEffectsLayer
 import com.darktubbie.aeroplayer.ui.effects.LocalAmbientIntensity
+import com.darktubbie.aeroplayer.ui.effects.aeroTouchEffects
+import com.darktubbie.aeroplayer.ui.effects.rememberAeroTouchEffectsState
 import com.darktubbie.aeroplayer.ui.effects.LocalAmbientPlayback
 import androidx.compose.material3.MaterialTheme
 import com.darktubbie.aeroplayer.ui.theme.AeroTypography
@@ -42,6 +55,12 @@ import com.darktubbie.aeroplayer.ui.theme.LocalAeroColorScheme
 import com.darktubbie.aeroplayer.ui.theme.colorScheme
 import com.darktubbie.aeroplayer.ui.theme.materialColorScheme
 import com.darktubbie.aeroplayer.ui.home.HomeScreen
+import com.darktubbie.aeroplayer.ui.layout.AeroDesktopHorizontalScreen
+import com.darktubbie.aeroplayer.ui.layout.AeroDesktopMode
+import com.darktubbie.aeroplayer.ui.layout.AeroDesktopVerticalScreen
+import com.darktubbie.aeroplayer.ui.layout.AeroLayoutMode
+import com.darktubbie.aeroplayer.ui.layout.LocalAeroLayoutMode
+import com.darktubbie.aeroplayer.ui.layout.rememberAeroLayoutMode
 import com.darktubbie.aeroplayer.ui.library.LibraryScreen
 import com.darktubbie.aeroplayer.ui.library.LibraryTab
 import com.darktubbie.aeroplayer.ui.more.AddTracksToPlaylistScreen
@@ -55,6 +74,7 @@ import com.darktubbie.aeroplayer.ui.more.SettingsScreen
 import com.darktubbie.aeroplayer.ui.navigation.AppDestination
 import com.darktubbie.aeroplayer.ui.navigation.BottomNavBar
 import com.darktubbie.aeroplayer.ui.nowplaying.EmptyNowPlayingPlaceholder
+import com.darktubbie.aeroplayer.ui.album.AlbumShowcaseScreen
 import com.darktubbie.aeroplayer.ui.nowplaying.NowPlayingScreen
 import com.darktubbie.aeroplayer.ui.nowplaying.SleepTimerSheet
 
@@ -79,6 +99,14 @@ import com.darktubbie.aeroplayer.ui.nowplaying.SleepTimerSheet
  * simplemente se le pide a MainViewModel que active el LibraryTab
  * correspondiente. No se duplicó ni se reescribió LibraryScreen.
  */
+/**
+ * Fase 7 (0.6.0): tiempo sin tocar la pantalla antes de que Aero
+ * Rest Mode se active (con el ajuste en ON). 30s — ni tan corto que
+ * moleste mientras se mira la pantalla sin tocarla (leyendo una
+ * letra, viendo pasar canciones), ni tan largo que tarde en notarse.
+ */
+private const val AERO_REST_MODE_TIMEOUT_MS = 30_000L
+
 class MainActivity : ComponentActivity() {
 
     private val viewModel: MainViewModel by viewModels()
@@ -254,6 +282,74 @@ class MainActivity : ComponentActivity() {
                 mutableStateOf(false)
             }
 
+            // Fase 8 (0.6.0): Album Showcase. Se guarda la clave
+            // (nombre, artista) y no el Album en sí, para que el
+            // overlay siempre muestre la versión actual de la
+            // biblioteca (p. ej. tras un re-escaneo).
+            var openAlbumKey by remember {
+                mutableStateOf<Pair<String, String>?>(null)
+            }
+
+            // Fase 7 (0.6.0): Aero Rest Mode. `lastInteractionAtMs`
+            // se actualiza desde el propio Box raíz (ver más abajo,
+            // PointerEventPass.Initial — observa sin consumir, así
+            // que no interfiere con ningún botón/gesto normal de la
+            // app) y desde el toque que sale del overlay.
+            val restModeEnabled by
+                viewModel.restModeEnabled
+
+            var isResting by remember {
+                mutableStateOf(false)
+            }
+
+            var lastInteractionAtMs by remember {
+                mutableStateOf(System.currentTimeMillis())
+            }
+
+            // No debe empezar ya "descansando" al volver de segundo
+            // plano solo porque pasó tiempo real mientras la app
+            // estaba oculta — eso se sentiría como un bug, no como
+            // un modo de reposo.
+            val lifecycleOwner = LocalLifecycleOwner.current
+
+            DisposableEffect(lifecycleOwner) {
+
+                val observer =
+                    LifecycleEventObserver { _, event ->
+
+                        if (event == Lifecycle.Event.ON_RESUME) {
+                            isResting = false
+                            lastInteractionAtMs = System.currentTimeMillis()
+                        }
+                    }
+
+                lifecycleOwner.lifecycle.addObserver(observer)
+
+                onDispose {
+                    lifecycleOwner.lifecycle.removeObserver(observer)
+                }
+            }
+
+            LaunchedEffect(restModeEnabled) {
+
+                if (!restModeEnabled) {
+                    isResting = false
+                    return@LaunchedEffect
+                }
+
+                while (true) {
+
+                    delay(1000)
+
+                    val idleForMs =
+                        System.currentTimeMillis() - lastInteractionAtMs
+
+                    if (!isResting && idleForMs >= AERO_REST_MODE_TIMEOUT_MS) {
+                        isResting = true
+                    }
+                }
+            }
+
             fun navigateTo(
                 target: AppDestination
             ) {
@@ -364,6 +460,18 @@ class MainActivity : ComponentActivity() {
             val appLanguage by
                 viewModel.appLanguage
 
+            val aeroDesktopMode by
+                viewModel.aeroDesktopMode
+
+            // Fase 1 (0.6.0): todavía nadie rama sobre este valor
+            // más abajo — las Fases 2 y 3 son quienes van a leer
+            // LocalAeroLayoutMode.current para decidir qué pantalla
+            // mostrar. Se calcula y se provee ya desde esta fase
+            // para que esas fases no tengan que volver a tocar
+            // MainActivity para engancharse.
+            val layoutMode by
+                rememberAeroLayoutMode(aeroDesktopMode)
+
             /*
              * LibraryScreen es una sola función que ya sabe
              * mostrar Songs/Albums/Artists según libraryTab (sus
@@ -420,8 +528,11 @@ class MainActivity : ComponentActivity() {
                         viewModel.onSortOrderChange(order)
                     },
 
+                    // Fase 8 (0.6.0): tocar un álbum abre el Album
+                    // Showcase (desde ahí se reproduce completo o
+                    // en aleatorio); antes lo reproducía directo.
                     onAlbumClick = { album ->
-                        viewModel.playAlbum(album)
+                        openAlbumKey = album.name to album.artist
                     },
 
                     onArtistSelected = { artistName ->
@@ -471,8 +582,15 @@ class MainActivity : ComponentActivity() {
 
                 LocalAmbientIntensity provides ambientIntensity,
 
-                LocalAeroColorScheme provides appTheme.colorScheme()
+                LocalAeroColorScheme provides appTheme.colorScheme(),
+
+                LocalAeroLayoutMode provides layoutMode
             ) {
+
+            // Fase 10 (0.6.0): microinteracciones de toque. Tiene que
+            // crearse acá adentro (necesita LocalAmbientIntensity).
+            val touchEffects =
+                rememberAeroTouchEffectsState()
 
             Box(
                 modifier =
@@ -495,7 +613,214 @@ class MainActivity : ComponentActivity() {
                         .background(
                             AeroColors.BackgroundGradient.last()
                         )
+                        // Fase 7 (0.6.0, Aero Rest Mode): observa
+                        // CUALQUIER toque en cualquier parte de la
+                        // app para reiniciar el contador de
+                        // inactividad — `PointerEventPass.Initial`
+                        // es clave: mira el evento sin consumirlo,
+                        // así que ningún botón/gesto normal de abajo
+                        // se ve afectado.
+                        .pointerInput(Unit) {
+                            awaitPointerEventScope {
+                                while (true) {
+                                    awaitPointerEvent(
+                                        PointerEventPass.Initial
+                                    )
+                                    lastInteractionAtMs =
+                                        System.currentTimeMillis()
+                                }
+                            }
+                        }
+                        // Fase 10 (0.6.0): detecta TOQUES (no scroll)
+                        // para la onda/burbujas; mismo criterio que
+                        // Rest Mode: observa en Initial, no consume.
+                        .aeroTouchEffects(touchEffects)
             ) {
+
+            // Fase 4 (0.6.0): con `configChanges` declarado en el
+            // manifest, rotar ya no recrea la Activity — Compose solo
+            // recompone con la nueva orientación. Este Crossfade hace
+            // que el cambio entre Mobile / Desktop horizontal /
+            // Desktop vertical se sienta intencional (fundido corto)
+            // en vez de un salto seco. Dentro se usa `mode` (el valor
+            // que está mostrando cada capa durante la transición), no
+            // `layoutMode` directamente.
+            Crossfade(
+                targetState = layoutMode,
+                modifier = Modifier.fillMaxSize(),
+                animationSpec = tween(durationMillis = 350),
+                label = "aeroLayoutModeTransition"
+            ) { mode ->
+
+            if (mode == AeroLayoutMode.DESKTOP_HORIZONTAL) {
+
+                // Fase 2 (0.6.0): estos 4 valores viven acá adentro
+                // (no arriba, junto a currentTrack/isPlaying) para
+                // no hacer recomponer TODA la pantalla en cada tick
+                // de posición cuando se está en Mobile — la interfaz
+                // Mobile ya los lee igual de acotado, solo que
+                // dentro de la rama REPRODUCTOR del `when` de más
+                // abajo en vez de acá.
+                val desktopPositionMs by
+                    viewModel.positionMs
+
+                val desktopDurationMs by
+                    viewModel.durationMs
+
+                val desktopShuffleEnabled by
+                    viewModel.shuffleEnabled
+
+                val desktopRepeatMode by
+                    viewModel.repeatMode
+
+                AeroDesktopHorizontalScreen(
+                    tracks = tracks,
+                    albums = albums,
+                    artists = artists,
+                    playlists = playlists,
+                    favoriteTracks = favoriteTracks,
+
+                    historyTracks =
+                        historyTracks.map { it.first },
+
+                    tracksInPlaylist = { playlist ->
+                        viewModel.tracksInPlaylist(playlist)
+                    },
+
+                    currentTrack = currentTrack,
+                    isPlaying = isPlaying,
+                    positionMs = desktopPositionMs,
+                    durationMs = desktopDurationMs,
+                    shuffleEnabled = desktopShuffleEnabled,
+                    repeatMode = desktopRepeatMode,
+
+                    // Fase 2 (0.6.0): a diferencia de Mobile, en
+                    // Desktop tocar cualquier canción de cualquier
+                    // sección reproduce esa lista completa como cola
+                    // empezando ahí (comportamiento clásico de
+                    // reproductor de escritorio) — ver
+                    // MainViewModel.playFromList.
+                    onTrackClick = { track, listContext ->
+                        viewModel.playFromList(listContext, track)
+                    },
+
+                    onPlayPauseClick = {
+                        viewModel.togglePlayPause()
+                    },
+
+                    onSkipNext = {
+                        viewModel.skipNext()
+                    },
+
+                    onSkipPrevious = {
+                        viewModel.skipPrevious()
+                    },
+
+                    onSeek = { ms ->
+                        viewModel.seekTo(ms)
+                    },
+
+                    onToggleShuffle = {
+                        viewModel.toggleShuffle()
+                    },
+
+                    onCycleRepeatMode = {
+                        viewModel.cycleRepeatMode()
+                    },
+
+                    onTick = {
+                        viewModel.refreshPlaybackPosition()
+                    },
+
+                    onExitDesktopMode = {
+                        viewModel.setAeroDesktopMode(AeroDesktopMode.OFF)
+                    },
+
+                    onOpenAlbumShowcase = { album ->
+                        openAlbumKey = album.name to album.artist
+                    }
+                )
+
+            } else if (mode == AeroLayoutMode.DESKTOP_VERTICAL) {
+
+                // Fase 3 (0.6.0): mismo motivo que en la rama
+                // DESKTOP_HORIZONTAL de arriba — leídos acá adentro
+                // para no recomponer de más en Mobile.
+                val desktopPositionMs by
+                    viewModel.positionMs
+
+                val desktopDurationMs by
+                    viewModel.durationMs
+
+                val desktopShuffleEnabled by
+                    viewModel.shuffleEnabled
+
+                val desktopRepeatMode by
+                    viewModel.repeatMode
+
+                AeroDesktopVerticalScreen(
+                    tracks = tracks,
+                    albums = albums,
+                    artists = artists,
+                    playlists = playlists,
+                    favoriteTracks = favoriteTracks,
+
+                    historyTracks =
+                        historyTracks.map { it.first },
+
+                    tracksInPlaylist = { playlist ->
+                        viewModel.tracksInPlaylist(playlist)
+                    },
+
+                    currentTrack = currentTrack,
+                    isPlaying = isPlaying,
+                    positionMs = desktopPositionMs,
+                    durationMs = desktopDurationMs,
+                    shuffleEnabled = desktopShuffleEnabled,
+                    repeatMode = desktopRepeatMode,
+
+                    onTrackClick = { track, listContext ->
+                        viewModel.playFromList(listContext, track)
+                    },
+
+                    onPlayPauseClick = {
+                        viewModel.togglePlayPause()
+                    },
+
+                    onSkipNext = {
+                        viewModel.skipNext()
+                    },
+
+                    onSkipPrevious = {
+                        viewModel.skipPrevious()
+                    },
+
+                    onSeek = { ms ->
+                        viewModel.seekTo(ms)
+                    },
+
+                    onToggleShuffle = {
+                        viewModel.toggleShuffle()
+                    },
+
+                    onCycleRepeatMode = {
+                        viewModel.cycleRepeatMode()
+                    },
+
+                    onTick = {
+                        viewModel.refreshPlaybackPosition()
+                    },
+
+                    onExitDesktopMode = {
+                        viewModel.setAeroDesktopMode(AeroDesktopMode.OFF)
+                    },
+
+                    onOpenAlbumShowcase = { album ->
+                        openAlbumKey = album.name to album.artist
+                    }
+                )
+
+            } else {
 
             Column(
                 modifier =
@@ -628,6 +953,16 @@ class MainActivity : ComponentActivity() {
                                 val repeatMode by
                                     viewModel.repeatMode
 
+                                // Fase 8 (0.6.0): leídos solo acá
+                                // adentro, mismo criterio que
+                                // positionMs: no recomponer el resto
+                                // de la app al cambiar la cola.
+                                val queueItems by
+                                    viewModel.queueItems
+
+                                val currentQueueIndex by
+                                    viewModel.currentQueueIndex
+
                                 NowPlayingScreen(
                                     track = currentTrack,
                                     isPlaying = isPlaying,
@@ -691,6 +1026,22 @@ class MainActivity : ComponentActivity() {
 
                                     onOpenSleepTimer = {
                                         sleepTimerSheetOpen = true
+                                    },
+
+                                    queueItems = queueItems,
+
+                                    currentQueueIndex = currentQueueIndex,
+
+                                    onPlayQueueItem = { index ->
+                                        viewModel.playQueueItem(index)
+                                    },
+
+                                    onRemoveQueueItem = { index ->
+                                        viewModel.removeQueueItem(index)
+                                    },
+
+                                    onMoveQueueItem = { from, to ->
+                                        viewModel.moveQueueItem(from, to)
                                     }
                                 )
 
@@ -791,6 +1142,10 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
+            }
+
+            }
+
             if (apeEditorOpen && currentTrack != null) {
 
                 ApeEditorScreen(
@@ -889,6 +1244,18 @@ class MainActivity : ComponentActivity() {
                     onAppLanguageChange = { code ->
                         viewModel.setLanguage(code)
                         recreate()
+                    },
+
+                    aeroDesktopMode = aeroDesktopMode,
+
+                    onAeroDesktopModeChange = { mode ->
+                        viewModel.setAeroDesktopMode(mode)
+                    },
+
+                    restModeEnabled = restModeEnabled,
+
+                    onRestModeEnabledChange = { enabled ->
+                        viewModel.setRestModeEnabled(enabled)
                     },
 
                     onOpenFolders = {
@@ -1095,6 +1462,61 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
+            // Fase 8 (0.6.0): Album Showcase como overlay a pantalla
+            // completa, igual que Favoritos/Playlists/Historial —
+            // vive fuera del Crossfade de layouts, así que sirve
+            // tal cual para Mobile y para Aero Desktop.
+            openAlbumKey?.let { key ->
+
+                val showcaseAlbum =
+                    albums.firstOrNull {
+                        it.name == key.first &&
+                            it.artist == key.second
+                    }
+
+                if (showcaseAlbum == null) {
+
+                    // El álbum ya no existe (p. ej. se quitó su
+                    // carpeta): se cierra en vez de dejar una
+                    // pantalla vacía.
+                    LaunchedEffect(key) {
+                        openAlbumKey = null
+                    }
+
+                } else {
+
+                    AlbumShowcaseScreen(
+                        album = showcaseAlbum,
+                        currentTrackUri = currentTrackUri,
+
+                        onPlayAlbum = { albumTracks ->
+                            viewModel.playAlbumTracks(
+                                albumTracks,
+                                shuffle = false
+                            )
+                        },
+
+                        onShuffleAlbum = { albumTracks ->
+                            viewModel.playAlbumTracks(
+                                albumTracks,
+                                shuffle = true
+                            )
+                        },
+
+                        onTrackClick = { albumTracks, index ->
+                            viewModel.playAlbumTrack(
+                                albumTracks,
+                                index
+                            )
+                        },
+
+                        onBack = {
+                            openAlbumKey = null
+                        }
+                    )
+                }
+            }
+
             if (historyScreenOpen) {
 
                 HistoryScreen(
@@ -1110,6 +1532,25 @@ class MainActivity : ComponentActivity() {
 
                     onBack = {
                         historyScreenOpen = false
+                    }
+                )
+            }
+
+            // Fase 10 (0.6.0): capa de dibujo de las ondas. Va arriba
+            // de todo el contenido y de los overlays, pero debajo de
+            // Rest Mode; no recibe toques.
+            AeroTouchEffectsLayer(touchEffects)
+
+            // Fase 7 (0.6.0): último hijo del Box raíz a propósito
+            // — tiene que quedar arriba de todo lo demás (incluidos
+            // los overlays de arriba: editor .aero, hoja de Sleep
+            // Timer, agregar a playlist, Historial).
+            if (isResting) {
+
+                AeroRestModeOverlay(
+                    onExit = {
+                        isResting = false
+                        lastInteractionAtMs = System.currentTimeMillis()
                     }
                 )
             }

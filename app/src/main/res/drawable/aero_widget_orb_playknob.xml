@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dial grande de play/pausa con anillo verde de acento (Widget Orb). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#2FBF6F" />
+        </shape>
+    </item>
+    <item android:bottom="3dp" android:left="3dp" android:right="3dp" android:top="3dp">
+        <shape android:shape="oval">
+            <gradient
+                android:angle="270"
+                android:endColor="#CFE6F7"
+                android:startColor="#FFFFFF" />
+        </shape>
+    </item>
+    <item
+        android:height="24dp"
+        android:gravity="top"
+        android:left="8dp"
+        android:right="8dp"
+        android:top="6dp">
+        <shape android:shape="oval">
+            <solid android:color="#99FFFFFF" />
+        </shape>
+    </item>
+</layer-list>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Orbe de play (dark): anillo verde de acento + cuerpo de vidrio + reflejo -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <gradient
+                android:angle="270"
+                android:endColor="#0A2A20"
+                android:startColor="#2A8C68" />
+            <stroke
+                android:width="2.5dp"
+                android:color="#3EDB8C" />
+        </shape>
+    </item>
+    <item
+        android:height="15dp"
+        android:gravity="top"
+        android:left="5dp"
+        android:right="5dp"
+        android:top="3dp">
+        <shape android:shape="oval">
+            <gradient
+                android:angle="270"
+                android:endColor="#00FFFFFF"
+                android:startColor="#40FFFFFF" />
+        </shape>
+    </item>
+</layer-list>

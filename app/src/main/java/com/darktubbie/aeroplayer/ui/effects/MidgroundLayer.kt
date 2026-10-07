@@ -1,6 +1,8 @@
 package com.darktubbie.aeroplayer.ui.effects
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -8,6 +10,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -22,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -71,6 +75,11 @@ import kotlin.math.sin
  * [AmbientArtworkColor]), independientemente del nivel de
  * intensidad — es un color, no movimiento. Sin canción/sin artwork,
  * quedan exactamente en el color fijo del tema.
+ *
+ * Fase 9 (0.6.0) — Album Art as Environment: la integración pasa de
+ * un color promedio a una paleta de dos colores ([ArtworkPalette]),
+ * con fundido entre canciones, un lavado vertical de color y las
+ * burbujas tintadas. Ver el bloque comentado más abajo.
  */
 @Composable
 fun MidgroundLayer(
@@ -148,16 +157,34 @@ fun MidgroundLayer(
         }
 
     /*
-     * Integración de artwork con el fondo ambiental (Fase 5 de la
-     * Experiencia de Artwork, 0.5.0): color dominante de la portada
-     * de la canción actual, resuelto de forma perezosa cada vez que
-     * cambia de canción (no en cada frame). Sin canción/sin
-     * artwork, queda en null y los degradados usan el color fijo
-     * del tema, exactamente igual que antes de esta fase.
+     * Album Art as Environment (Fase 9, 0.6.0). Evolución de la
+     * integración de la Fase 5 (que solo matizaba 2 glows con UN
+     * color promedio): ahora la portada actual aporta una paleta de
+     * dos colores ([ArtworkPalette]) que ilumina tres cosas del
+     * ambiente — los dos glows grandes (uno con cada color), un
+     * lavado vertical de color sobre todo el fondo, y el tinte de
+     * las burbujas.
+     *
+     * Sigue siendo COLOR, no movimiento: aplica igual con cualquier
+     * [AmbientIntensity] (incluido OFF/STATIC) y con reduce-motion.
+     * La intensidad solo gobierna lo que ya gobernaba (el balanceo
+     * de las burbujas) y, nuevo, cuánto "respira" el lavado — con la
+     * misma fase compartida, sin una animación aparte.
+     *
+     * La paleta se resuelve de forma perezosa al cambiar de canción
+     * (no en cada frame) y NO se borra mientras resuelve la
+     * siguiente: así no hay un parpadeo al tema fijo entre canciones.
+     * Sin canción/sin artwork, vuelve (con fundido) al color fijo del
+     * tema, igual que antes de esta fase.
      */
-    var artworkColor by
+    var palette by
         remember {
-            mutableStateOf<Color?>(null)
+            mutableStateOf<ArtworkPalette?>(null)
+        }
+
+    var lastPalette by
+        remember {
+            mutableStateOf<ArtworkPalette?>(null)
         }
 
     LaunchedEffect(
@@ -169,45 +196,91 @@ fun MidgroundLayer(
         val path =
             ambientPlayback.trackPath
 
-        artworkColor =
+        val resolved =
             if (path.isNullOrBlank()) {
                 null
             } else {
-                AmbientArtworkColor.get(
+                AmbientArtworkColor.getPalette(
                     context = context,
                     path = path,
                     artist = ambientPlayback.trackArtist,
                     album = ambientPlayback.trackAlbum
                 )
             }
+
+        palette = resolved
+
+        if (resolved != null) {
+            lastPalette = resolved
+        }
     }
+
+    // Fundido entre canciones: los colores y la fuerza se animan en
+    // vez de saltar. Al quedarse sin portada se conserva el último
+    // color mientras la fuerza baja a 0 (así se apaga en su color).
+    val shownPalette =
+        palette ?: lastPalette
+
+    val envStrength by
+        animateFloatAsState(
+            targetValue = if (palette != null) 1f else 0f,
+            animationSpec = tween(900),
+            label = "environment-strength"
+        )
+
+    val envPrimary by
+        animateColorAsState(
+            targetValue =
+                shownPalette?.primary
+                    ?: AeroColors.AmbientGlowPrimary.copy(alpha = 1f),
+            animationSpec = tween(900),
+            label = "environment-primary"
+        )
+
+    val envSecondary by
+        animateColorAsState(
+            targetValue =
+                shownPalette?.secondary
+                    ?: AeroColors.AmbientGlowSecondary.copy(alpha = 1f),
+            animationSpec = tween(900),
+            label = "environment-secondary"
+        )
 
     /*
-     * Mezcla sutil (35%) sobre el color fijo del tema — la
-     * identidad Aero sigue siendo la base, el artwork solo la
-     * matiza. Se preserva el alpha original del degradado: el
-     * artwork nunca lo vuelve más opaco ni más transparente.
+     * Mezcla sobre el color fijo del tema — la identidad Aero sigue
+     * siendo la base, el artwork la matiza. Se preserva el alpha
+     * original: el artwork nunca vuelve nada más opaco ni más
+     * transparente. Fase 9: 55% en los glows (era 35%).
      */
-    fun tintedGlow(
-        base: Color
-    ): Color {
-
-        val artwork =
-            artworkColor
-                ?: return base
-
-        return lerp(
+    fun tinted(
+        base: Color,
+        artwork: Color,
+        amount: Float
+    ): Color =
+        lerp(
             base.copy(alpha = 1f),
-            artwork,
-            0.35f
+            artwork.copy(alpha = 1f),
+            amount * envStrength
         ).copy(alpha = base.alpha)
-    }
 
     val glowPrimary =
-        tintedGlow(AeroColors.AmbientGlowPrimary)
+        tinted(AeroColors.AmbientGlowPrimary, envPrimary, 0.55f)
 
     val glowSecondary =
-        tintedGlow(AeroColors.AmbientGlowSecondary)
+        tinted(AeroColors.AmbientGlowSecondary, envSecondary, 0.55f)
+
+    val bubbleTint =
+        tinted(AeroColors.AmbientBubbleTint, envPrimary, 0.30f)
+
+    // "Respiración" del lavado: solo si hay animación activa, con
+    // la misma fase que mueve las burbujas.
+    val breathAmount: Float =
+        when (effectiveIntensity) {
+            AmbientIntensity.LOW -> 0.06f
+            AmbientIntensity.NORMAL -> 0.10f
+            AmbientIntensity.HIGH -> 0.16f
+            else -> 0f
+        }
 
     val density = LocalDensity.current
 
@@ -278,6 +351,40 @@ fun MidgroundLayer(
         modifier = modifier
     ) {
 
+        // Lavado de color de la portada: arriba un color, abajo el
+        // otro, transparente en el medio para no velar la interfaz.
+        // Alpha y respiración se leen dentro de graphicsLayer, así
+        // que no recomponen nada por fotograma.
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+
+                        val wave =
+                            phase?.value?.let {
+                                (sin(it) + 1f) / 2f
+                            } ?: 1f
+
+                        alpha =
+                            (1f - breathAmount) +
+                                breathAmount * wave
+                    }
+                    .background(
+                        Brush.verticalGradient(
+                            0f to
+                                envPrimary.copy(
+                                    alpha = 0.20f * envStrength
+                                ),
+                            0.55f to Color.Transparent,
+                            1f to
+                                envSecondary.copy(
+                                    alpha = 0.16f * envStrength
+                                )
+                        )
+                    )
+        )
+
         Box(
             modifier =
                 Modifier
@@ -343,13 +450,13 @@ fun MidgroundLayer(
                         CircleShape
                     )
                     .background(
-                        AeroColors.AmbientBubbleTint.copy(
+                        bubbleTint.copy(
                             alpha = 0.18f
                         )
                     )
                     .border(
                         2.dp,
-                        AeroColors.AmbientBubbleTint.copy(
+                        bubbleTint.copy(
                             alpha = 0.42f
                         ),
                         CircleShape
@@ -390,13 +497,13 @@ fun MidgroundLayer(
                         CircleShape
                     )
                     .background(
-                        AeroColors.AmbientBubbleTint.copy(
+                        bubbleTint.copy(
                             alpha = 0.22f
                         )
                     )
                     .border(
                         1.dp,
-                        AeroColors.AmbientBubbleTint.copy(
+                        bubbleTint.copy(
                             alpha = 0.45f
                         ),
                         CircleShape
@@ -418,13 +525,13 @@ fun MidgroundLayer(
                         CircleShape
                     )
                     .background(
-                        AeroColors.AmbientBubbleTint.copy(
+                        bubbleTint.copy(
                             alpha = 0.16f
                         )
                     )
                     .border(
                         2.dp,
-                        AeroColors.AmbientBubbleTint.copy(
+                        bubbleTint.copy(
                             alpha = 0.35f
                         ),
                         CircleShape

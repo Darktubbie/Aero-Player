@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Rueda circular del cluster de controles (izquierda del Widget
+     Classic): plateado glossy, como el aro de un iPod clásico. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="45dp"
+                android:centerX="0.5"
+                android:centerY="0.4"
+                android:endColor="#8FB7DE"
+                android:startColor="#FFFFFF" />
+            <stroke
+                android:width="1.5dp"
+                android:color="#5A8CC2" />
+        </shape>
+    </item>
+</layer-list>
